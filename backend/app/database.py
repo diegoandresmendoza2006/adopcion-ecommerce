@@ -1,9 +1,14 @@
+import os
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# Reemplaza 'tu_contraseña_aqui' con tu clave real
-SQLALCHEMY_DATABASE_URL = "postgresql://usuario_adopcion:Usudop.2026!@localhost:5432/adopcion_ecommerce"
+# Carga las variables del archivo .env de forma segura
+load_dotenv()
+
+# Lee la URL de la base de datos desde el entorno
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
