@@ -1,0 +1,65 @@
+.auditoria-container {
+  padding: 40px;
+  background-color: #f4f7f6;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.auditoria-container h2 {
+  color: #333;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+.auditoria-container > p {
+  color: #666;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.table-box {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.tabla-auditoria {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tabla-auditoria th {
+  background-color: #1f2937;
+  color: white;
+  padding: 12px 15px;
+  font-size: 14px;
+}
+
+.tabla-auditoria td {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+  color: #444;
+}
+
+.tabla-auditoria tr:last-child td {
+  border-bottom: none;
+}
+
+.badge-update {
+  background-color: #d1fae5;
+  color: #059669;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.text-muted {
+  color: #888;
+  font-size: 13px;
+}

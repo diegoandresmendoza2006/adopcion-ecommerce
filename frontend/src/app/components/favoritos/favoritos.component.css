@@ -1,0 +1,73 @@
+.favoritos-container {
+  padding: 40px;
+  background-color: #f4f7f6;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+.favoritos-container h2 {
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.favoritos-container > p {
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.grid-favoritos {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.card-fav {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  width: 250px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  text-align: left;
+}
+
+.imagen-fav {
+  height: 100px;
+  background-color: #e2e8f0;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
+  margin-bottom: 15px;
+}
+
+.card-fav h3 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+  font-size: 16px;
+}
+
+.precio {
+  font-size: 16px;
+  font-weight: bold;
+  color: #4f46e5;
+  margin-bottom: 15px;
+}
+
+.btn-mover {
+  width: 100%;
+  padding: 8px;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.btn-mover:hover {
+  background-color: #059669;
+}

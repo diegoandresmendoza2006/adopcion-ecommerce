@@ -1,0 +1,99 @@
+.detalle-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  background-color: #f4f7f6;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+.detalle-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  display: flex;
+  max-width: 800px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.imagen-grande {
+  flex: 1;
+  background-color: #e2e8f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 80px;
+}
+
+.info-container {
+  flex: 1.5;
+  padding: 30px;
+  text-align: left;
+}
+
+.info-container h2 {
+  margin: 0 0 5px 0;
+  color: #2c3e50;
+}
+
+.raza {
+  color: #777;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.specs {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #444;
+}
+
+.seccion-titulo {
+  margin: 15px 0 5px 0;
+  color: #333;
+  font-size: 14px;
+}
+
+.desc {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.acciones {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-volver, .btn-solicitar {
+  padding: 10px 15px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 14px;
+  text-align: center;
+  flex: 1;
+}
+
+.btn-volver {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-volver:hover {
+  background-color: #5a6268;
+}
+
+.btn-solicitar {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-solicitar:hover {
+  background-color: #218838;
+}

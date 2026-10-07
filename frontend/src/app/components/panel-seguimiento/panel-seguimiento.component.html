@@ -1,0 +1,65 @@
+<div class="seguimiento-container">
+  <div class="header-flex">
+    <div>
+      <h2>Mis Seguimientos Post-Adopción</h2>
+      <p>Reporta el estado de salud y adaptación de tu mascota</p>
+    </div>
+    <button class="btn-nuevo" (click)="enviarReporte()">{{ mostrarForm() ? 'Cancelar' : '+ Enviar Nuevo Reporte' }}</button>
+  </div>
+
+  @if (ok()) { <p class="msg-ok">{{ ok() }}</p> }
+  @if (error()) { <p class="msg-error">{{ error() }}</p> }
+
+  @if (mostrarForm()) {
+    @if (adopciones().length === 0) {
+      <p class="msg-vacio">Aún no tienes adopciones aprobadas para reportar.</p>
+    } @else {
+      <form class="form-panel" (ngSubmit)="guardar()">
+        <div>
+          <label>Mascota adoptada</label>
+          <select [(ngModel)]="nuevo.solicitud_id" name="solicitud_id" required>
+            <option [ngValue]="null">-- Elige --</option>
+            @for (a of adopciones(); track a.id) {
+              <option [ngValue]="a.id">{{ a.mascota_nombre }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label>Estado de salud</label>
+          <select [(ngModel)]="nuevo.estado_salud" name="estado_salud">
+            @for (e of estados; track e) { <option [value]="e">{{ e }}</option> }
+          </select>
+        </div>
+        <div class="full">
+          <label>Observaciones</label>
+          <textarea rows="3" [(ngModel)]="nuevo.observaciones_texto" name="observaciones_texto"></textarea>
+        </div>
+        <div class="full"><button type="submit" [disabled]="enviando()">{{ enviando() ? 'Enviando...' : 'Enviar reporte' }}</button></div>
+      </form>
+    }
+  }
+
+  <div class="table-box">
+    <table class="tabla-seguimiento">
+      <thead>
+        <tr>
+          <th>Mascota</th>
+          <th>Fecha</th>
+          <th>Estado de Salud</th>
+          <th>Observaciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (seg of seguimientos(); track seg.id) {
+          <tr>
+            <td class="font-bold">{{ seg.mascota_nombre }}</td>
+            <td>{{ seg.fecha_reporte | date:'dd/MM/yyyy' }}</td>
+            <td><span class="badge-salud">{{ seg.estado_salud }}</span></td>
+            <td class="text-obs">{{ seg.observaciones_texto }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  @if (seguimientos().length === 0) { <p class="msg-vacio">Todavía no has enviado reportes.</p> }
+</div>

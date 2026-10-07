@@ -1,0 +1,44 @@
+<div class="solicitudes-container">
+  <h2>Mis Trámites de Adopción</h2>
+  <p>Consulta el estado de tus solicitudes y descarga tus certificados</p>
+
+  @if (cargando()) { <p class="msg-vacio">Cargando...</p> }
+  @if (error()) { <p class="msg-error">{{ error() }}</p> }
+
+  <div class="table-box">
+    <table class="tabla-solicitudes">
+      <thead>
+        <tr>
+          <th>Mascota</th>
+          <th>Fecha</th>
+          <th>Estado</th>
+          <th>Acción del Usuario</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of solicitudes(); track s.id) {
+          <tr>
+            <td class="font-bold">{{ s.mascota_nombre }}</td>
+            <td>{{ s.fecha_solicitud | date:'dd/MM/yyyy' }}</td>
+            <td>
+              <span class="badge" [class.revision]="s.estado === 'En Revisión'" [class.aprobada]="s.estado === 'Aprobada'">
+                {{ s.estado }}
+              </span>
+            </td>
+            <td>
+              @if (s.estado === 'Aprobada') {
+                <button class="btn-cert" (click)="descargarCertificado(s)">📄 Certificado (imprimir / guardar PDF)</button>
+              } @else {
+                <span class="text-muted">Sin acciones pendientes</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (!cargando() && solicitudes().length === 0) {
+    <p class="msg-vacio">Aún no has enviado solicitudes. Elige una mascota en el catálogo.</p>
+  }
+</div>

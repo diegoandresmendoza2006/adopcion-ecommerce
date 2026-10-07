@@ -1,0 +1,45 @@
+<div class="catalogo-container">
+  <h2>Catálogo de Mascotas</h2>
+  <p>Encuentra a tu nuevo mejor amigo</p>
+
+  @if (cargando()) { <p class="msg-vacio">Cargando mascotas...</p> }
+  @if (error()) { <p class="msg-error">{{ error() }}</p> }
+
+  <div class="grid-mascotas">
+    @for (mascota of ordenadas(); track mascota.id) {
+      <div class="card-mascota" [class.adoptada]="esAdoptada(mascota)">
+
+        <div class="foto">
+          @if (mascota.imagen_url) {
+            <img [src]="mascota.imagen_url" [alt]="'Foto de ' + mascota.nombre">
+          } @else {
+            <span class="sin-foto">🐾</span>
+          }
+
+          @if (esAdoptada(mascota)) {
+            <span class="sello adoptado">❤️ ¡Adoptado!</span>
+          } @else if (enProceso(mascota)) {
+            <span class="sello proceso">⏳ En proceso</span>
+          }
+        </div>
+
+        <h3>{{ mascota.nombre || 'Sin nombre' }}</h3>
+        <p class="dato"><strong>Especie:</strong> {{ mascota.especie }}</p>
+        <p class="dato"><strong>Raza:</strong> {{ mascota.raza || 'No especificada' }}</p>
+        <p class="dato"><strong>Edad:</strong> {{ edadTexto(mascota) }}</p>
+        <p class="dato descripcion">{{ mascota.descripcion || '' }}</p>
+
+        <div class="acciones">
+          <a [routerLink]="['/detalle-mascota', mascota.id]" class="btn-detalle">Ver detalle</a>
+          @if (disponible(mascota)) {
+            <a routerLink="/solicitud" [queryParams]="{ mascota: mascota.id }" class="btn-adoptar">Adoptar</a>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (!cargando() && !error() && mascotas().length === 0) {
+    <div class="msg-vacio">No hay mascotas registradas para mostrar.</div>
+  }
+</div>

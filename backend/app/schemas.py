@@ -89,6 +89,10 @@ class MascotaOut(BaseModel):
 
 class SolicitudAdopcionCreate(BaseModel):
     mascota_id: int
+    nombre_contacto: Optional[str] = None
+    telefono: Optional[str] = None
+    tipo_vivienda: Optional[str] = None
+    motivo: Optional[str] = None
 
 class SolicitudAdopcionOut(BaseModel):
     id: int
@@ -125,3 +129,106 @@ class ProductoOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+
+# ----------------------------------------
+# ESQUEMAS NUEVOS (adopciones detalladas, compras, seguimientos, admin)
+# ----------------------------------------
+from typing import List
+from pydantic import ConfigDict, Field
+
+
+class SolicitudDetalleOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    usuario_id: int
+    mascota_id: int
+    estado: str
+    fecha_solicitud: Optional[datetime] = None
+    mascota_nombre: Optional[str] = None
+    adoptante_nombre: Optional[str] = None
+    nombre_contacto: Optional[str] = None
+    telefono: Optional[str] = None
+    tipo_vivienda: Optional[str] = None
+    motivo: Optional[str] = None
+
+
+class EstadoUpdate(BaseModel):
+    estado: str
+
+
+class CategoriaOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    nombre: str
+
+
+class CompraItem(BaseModel):
+    producto_id: int
+    cantidad: int = Field(gt=0)
+
+
+class CompraCreate(BaseModel):
+    items: List[CompraItem] = Field(min_length=1)
+
+
+class OrdenOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    total: float
+    estado_pedido: str
+    fecha_compra: Optional[datetime] = None
+
+
+class SeguimientoCreate(BaseModel):
+    solicitud_id: int
+    estado_salud: str
+    observaciones_texto: Optional[str] = None
+
+
+class SeguimientoOut(BaseModel):
+    id: int
+    solicitud_id: int
+    fecha_reporte: Optional[datetime] = None
+    estado_salud: str
+    observaciones_texto: Optional[str] = None
+    mascota_nombre: Optional[str] = None
+    adoptante_nombre: Optional[str] = None
+
+
+class EncargadoCreate(BaseModel):
+    nombre_completo: str
+    email: EmailStr
+    password: str = Field(min_length=6)
+    refugio_id: int
+
+
+class EncargadoOut(BaseModel):
+    id: int
+    nombre_completo: str
+    email: EmailStr
+    refugio_id: Optional[int] = None
+    refugio_nombre: Optional[str] = None
+
+
+class AuditoriaOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    nombre_usuario: str
+    accion: str
+    tabla_afectada: str
+    fecha_accion: Optional[datetime] = None
+
+
+class MetricasOut(BaseModel):
+    mes: str
+    solicitudes_mes: int
+    adopciones_mes: int
+    pedidos_mes: int
+    ventas_mes: float
+    ventas_totales: float
+    usuarios_registrados: int
+    usuarios_nuevos_mes: int
+    mascotas_disponibles: int
+    mascotas_adoptadas: int

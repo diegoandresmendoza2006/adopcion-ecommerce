@@ -1,0 +1,49 @@
+<div class="admin-encargados-container">
+  <div class="header-flex">
+    <div>
+      <h2>Gestión de Encargados de Refugio</h2>
+      <p>Creación de cuentas y asignación de sedes (Exclusivo Admin)</p>
+    </div>
+    <button class="btn-primary" (click)="crearEncargado()">{{ mostrarForm() ? 'Cancelar' : '+ Crear Encargado' }}</button>
+  </div>
+
+  @if (ok()) { <p class="msg-ok">{{ ok() }}</p> }
+  @if (error()) { <p class="msg-error">{{ error() }}</p> }
+
+  @if (mostrarForm()) {
+    <form class="form-panel" (ngSubmit)="guardar()">
+      <div><label>Nombre completo</label><input [(ngModel)]="nuevo.nombre_completo" name="nombre_completo" required></div>
+      <div><label>Correo electrónico</label><input type="email" [(ngModel)]="nuevo.email" name="email" required></div>
+      <div><label>Contraseña (mín. 6)</label><input type="password" minlength="6" [(ngModel)]="nuevo.password" name="password" required></div>
+      <div><label>Sede / Refugio</label>
+        <select [(ngModel)]="nuevo.refugio_id" name="refugio_id" required>
+          <option [ngValue]="null">-- Elige --</option>
+          @for (r of refugios(); track r.id) { <option [ngValue]="r.id">{{ r.nombre }}</option> }
+        </select>
+      </div>
+      <div class="full"><button type="submit" [disabled]="enviando()">{{ enviando() ? 'Creando...' : 'Crear encargado' }}</button></div>
+    </form>
+  }
+
+  <div class="table-box">
+    <table class="tabla-admin">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Correo Electrónico</th>
+          <th>Sede Asignada</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (e of encargados(); track e.id) {
+          <tr>
+            <td class="font-bold">{{ e.nombre_completo }}</td>
+            <td>{{ e.email }}</td>
+            <td>{{ e.refugio_nombre || '—' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  @if (encargados().length === 0) { <p class="msg-vacio">No hay encargados creados.</p> }
+</div>

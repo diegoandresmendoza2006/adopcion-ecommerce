@@ -1,0 +1,30 @@
+<div class="auditoria-container">
+  <h2>Registro de Auditoría (Inmutable)</h2>
+  <p>Seguimiento de operaciones críticas realizadas en la base de datos</p>
+
+  @if (error()) { <p class="msg-error">{{ error() }}</p> }
+
+  <div class="table-box">
+    <table class="tabla-auditoria">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Acción</th>
+          <th>Tabla</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of registrosAuditoria(); track r.id) {
+          <tr>
+            <td>{{ r.nombre_usuario }}</td>
+            <td><span class="badge-update">{{ r.accion }}</span></td>
+            <td>{{ r.tabla_afectada }}</td>
+            <td class="text-muted">{{ r.fecha_accion | date:'dd/MM/yyyy HH:mm' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  @if (registrosAuditoria().length === 0) { <p class="msg-vacio">Sin registros de auditoría.</p> }
+</div>

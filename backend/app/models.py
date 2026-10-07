@@ -48,6 +48,10 @@ class SolicitudAdopcion(Base):
     mascota_id = Column(Integer, ForeignKey("adopcion.mascotas.id"), nullable=False)
     estado = Column(String(50), nullable=False)
     fecha_solicitud = Column(TIMESTAMP, server_default=func.now())
+    nombre_contacto = Column(String(150))
+    telefono = Column(String(30))
+    tipo_vivienda = Column(String(50))
+    motivo = Column(Text)
 
 class SeguimientoAdopcion(Base):
     __tablename__ = "seguimiento_adopciones"

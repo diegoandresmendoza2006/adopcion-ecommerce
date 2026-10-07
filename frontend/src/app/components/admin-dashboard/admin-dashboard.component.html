@@ -1,0 +1,60 @@
+<div class="admin-container">
+  <h2>Dashboard Operativo General</h2>
+  <p>Métricas y estadísticas globales de la plataforma Paws&Shop</p>
+
+  <div style="text-align: center; margin-bottom: 25px;">
+    <label for="mes" style="font-weight: bold; color: #444; margin-right: 8px;">Mes a consultar:</label>
+    <input id="mes" type="month" [value]="mes()" [max]="maxMes" (change)="cambiarMes($any($event.target).value)"
+           style="padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px;">
+  </div>
+
+  @if (error()) { <p class="msg-error">{{ error() }}</p> }
+
+  @if (metricas(); as m) {
+    <h3 style="text-align: center; color: #2c3e50; text-transform: capitalize;">Resumen de {{ nombreMes() }}</h3>
+    <div class="grid-cards">
+      <div class="card-metrica adopcion">
+        <h4>Adopciones aprobadas</h4>
+        <p>{{ m.adopciones_mes }}</p>
+      </div>
+      <div class="card-metrica adopcion">
+        <h4>Solicitudes de adopción recibidas</h4>
+        <p>{{ m.solicitudes_mes }}</p>
+      </div>
+      <div class="card-metrica ventas">
+        <h4>Ventas del mes ({{ m.pedidos_mes }} pedidos)</h4>
+        <p>${{ m.ventas_mes | number:'1.2-2' }}</p>
+      </div>
+      <div class="card-metrica usuarios">
+        <h4>Usuarios nuevos del mes</h4>
+        <p>{{ m.usuarios_nuevos_mes }}</p>
+      </div>
+    </div>
+
+    <h3 style="text-align: center; color: #2c3e50;">Acumulado (no se reinicia)</h3>
+    <div class="grid-cards">
+      <div class="card-metrica ventas">
+        <h4>Ventas totales de todos los meses</h4>
+        <p>${{ m.ventas_totales | number:'1.2-2' }}</p>
+      </div>
+      <div class="card-metrica usuarios">
+        <h4>Usuarios registrados</h4>
+        <p>{{ m.usuarios_registrados }}</p>
+      </div>
+      <div class="card-metrica adopcion">
+        <h4>Mascotas disponibles hoy</h4>
+        <p>{{ m.mascotas_disponibles }}</p>
+      </div>
+      <div class="card-metrica adopcion">
+        <h4>Mascotas adoptadas (total)</h4>
+        <p>{{ m.mascotas_adoptadas }}</p>
+      </div>
+    </div>
+  }
+
+  <div class="export-box">
+    <button class="btn-export" [disabled]="descargando()" (click)="exportarReporte()">
+      {{ descargando() ? 'Generando...' : '⬇ Descargar reporte en Excel (' + nombreMes() + ')' }}
+    </button>
+  </div>
+</div>

@@ -1,0 +1,39 @@
+<div class="tienda-container">
+  <h2>Tienda de Productos Solidaria</h2>
+  <p>Apoya a nuestros refugios comprando accesorios y alimentos</p>
+
+  @if (cargando()) { <p class="msg-vacio">Cargando productos...</p> }
+  @if (error()) { <p class="msg-error">{{ error() }}</p> }
+  @if (aviso()) { <p class="msg-ok">{{ aviso() }}</p> }
+
+  <div class="grid-productos">
+    @for (p of productos(); track p.id) {
+      <div class="card-producto">
+        <div class="imagen-producto">
+          @if (p.imagen_url) {
+            <img [src]="p.imagen_url" [alt]="p.nombre" style="width: 100%; height: 100%; object-fit: contain;">
+          } @else {
+            📦
+          }
+        </div>
+        <h3>{{ p.nombre }}</h3>
+        <p class="desc">{{ p.descripcion }}</p>
+        <p class="precio">${{ p.precio | number:'1.2-2' }}</p>
+        <p class="desc">{{ p.stock > 0 ? p.stock + ' disponibles' : 'Agotado' }}</p>
+
+        <div class="botones-prod">
+          <button class="btn-comprar" [disabled]="p.stock <= 0" (click)="agregarCarrito(p)">
+            {{ p.stock > 0 ? 'Añadir al Carrito' : 'Agotado' }}
+          </button>
+          <button class="btn-fav" (click)="agregarFavoritos(p)" [title]="carrito.esFavorito(p.id) ? 'Quitar de favoritos' : 'Añadir a favoritos'">
+            {{ carrito.esFavorito(p.id) ? '❤️' : '🤍' }}
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (!cargando() && !error() && productos().length === 0) {
+    <p class="msg-vacio">Todavía no hay productos en la tienda.</p>
+  }
+</div>

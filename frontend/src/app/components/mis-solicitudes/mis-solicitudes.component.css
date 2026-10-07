@@ -1,0 +1,93 @@
+.solicitudes-container {
+  padding: 40px;
+  background-color: #f4f7f6;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.solicitudes-container h2 {
+  color: #333;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+.solicitudes-container > p {
+  color: #666;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.table-box {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.tabla-solicitudes {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tabla-solicitudes th {
+  background-color: #e2e8f0;
+  color: #333;
+  padding: 12px 15px;
+  font-size: 14px;
+}
+
+.tabla-solicitudes td {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+  color: #444;
+}
+
+.tabla-solicitudes tr:last-child td {
+  border-bottom: none;
+}
+
+.font-bold {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.badge {
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.badge.revision {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.badge.aprobada {
+  background-color: #d1fae5;
+  color: #059669;
+}
+
+.btn-cert {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.btn-cert:hover {
+  background-color: #4338ca;
+}
+
+.text-muted {
+  color: #888;
+  font-size: 13px;
+}

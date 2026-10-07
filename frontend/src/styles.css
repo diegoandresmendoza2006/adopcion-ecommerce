@@ -1,1 +1,17 @@
-/* You can add global styles to this file, and also import other style files */
+/* Estilos globales */
+body { margin: 0; font-family: Arial, sans-serif; }
+
+.nav-link { color: white; margin: 0 6px; text-decoration: none; font-weight: bold; }
+.nav-link:hover { text-decoration: underline; }
+
+/* Mensajes y formularios reutilizables */
+.msg-ok { color: #1b7f3b; background: #e7f6ec; padding: 8px 12px; border-radius: 6px; margin: 10px 0; }
+.msg-error { color: #b42318; background: #fdecea; padding: 8px 12px; border-radius: 6px; margin: 10px 0; }
+.msg-vacio { color: #666; margin: 20px 0; }
+
+.form-panel { background: #fff; border-radius: 8px; padding: 16px; margin: 15px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.form-panel label { display: block; font-size: 13px; color: #444; margin-bottom: 4px; }
+.form-panel input, .form-panel select, .form-panel textarea { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+.form-panel .full { grid-column: 1 / -1; }
+.form-panel button { padding: 10px; border: none; border-radius: 4px; background: #28a745; color: #fff; cursor: pointer; }
+.form-panel button:disabled { opacity: .6; cursor: not-allowed; }

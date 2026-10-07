@@ -1,0 +1,70 @@
+.ver-seguimiento-container {
+  padding: 40px;
+  background-color: #f4f7f6;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.ver-seguimiento-container h2 {
+  color: #333;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+.ver-seguimiento-container > p {
+  color: #666;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.table-box {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.tabla-ver-seg {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tabla-ver-seg th {
+  background-color: #e2e8f0;
+  color: #333;
+  padding: 12px 15px;
+  font-size: 14px;
+}
+
+.tabla-ver-seg td {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+  color: #444;
+}
+
+.tabla-ver-seg tr:last-child td {
+  border-bottom: none;
+}
+
+.font-bold {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.badge-salud {
+  background-color: #dbeafe;
+  color: #1e40af;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.text-obs {
+  color: #666;
+  font-size: 13px;
+}

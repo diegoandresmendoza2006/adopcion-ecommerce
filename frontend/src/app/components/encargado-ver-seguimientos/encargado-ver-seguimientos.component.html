@@ -1,0 +1,32 @@
+<div class="ver-seguimiento-container">
+  <h2>Revisión de Seguimientos Post-Adopción</h2>
+  <p>Monitoreo de reportes de salud enviados por los adoptantes</p>
+
+  @if (error()) { <p class="msg-error">{{ error() }}</p> }
+
+  <div class="table-box">
+    <table class="tabla-ver-seg">
+      <thead>
+        <tr>
+          <th>Adoptante</th>
+          <th>Mascota Adoptada</th>
+          <th>Fecha</th>
+          <th>Estado de Salud Reportado</th>
+          <th>Observaciones del Usuario</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (seg of seguimientosRecibidos(); track seg.id) {
+          <tr>
+            <td>{{ seg.adoptante_nombre }}</td>
+            <td class="font-bold">{{ seg.mascota_nombre }}</td>
+            <td>{{ seg.fecha_reporte | date:'dd/MM/yyyy' }}</td>
+            <td><span class="badge-salud">{{ seg.estado_salud }}</span></td>
+            <td class="text-obs">{{ seg.observaciones_texto }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  @if (seguimientosRecibidos().length === 0) { <p class="msg-vacio">Aún no hay reportes de seguimiento.</p> }
+</div>

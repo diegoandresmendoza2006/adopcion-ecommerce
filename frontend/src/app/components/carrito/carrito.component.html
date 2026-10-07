@@ -1,0 +1,37 @@
+<div class="carrito-container">
+  <h2>Tu Carrito de Compras</h2>
+
+  @if (ok()) { <p class="msg-ok">{{ ok() }}</p> }
+  @if (error()) { <p class="msg-error">{{ error() }}</p> }
+
+  @if (carrito.items().length === 0) {
+    <p class="msg-vacio">Tu carrito está vacío. <a routerLink="/tienda">Ir a la tienda</a></p>
+  } @else {
+    <div class="carrito-box">
+      @for (item of carrito.items(); track item.producto_id) {
+        <div class="item-carrito">
+          <div class="info-item">
+            <div class="img-mini">📦</div>
+            <div>
+              <h4>{{ item.nombre }}</h4>
+              <p class="cant">
+                <button (click)="carrito.cambiarCantidad(item.producto_id, -1)">−</button>
+                Cantidad: {{ item.cantidad }}
+                <button (click)="carrito.cambiarCantidad(item.producto_id, 1)" [disabled]="item.cantidad >= item.stock">+</button>
+                <button (click)="carrito.quitar(item.producto_id)" title="Quitar">🗑️</button>
+              </p>
+            </div>
+          </div>
+          <span class="precio-item">${{ item.precio * item.cantidad | number:'1.2-2' }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="total-box">
+      <span class="total-texto">Total: ${{ carrito.total() | number:'1.2-2' }}</span>
+      <button class="btn-pagar" [disabled]="pagando()" (click)="pagarPedido()">
+        {{ pagando() ? 'Procesando...' : 'Pagar Pedido' }}
+      </button>
+    </div>
+  }
+</div>

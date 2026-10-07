@@ -1,24 +1,29 @@
 import { TestBed } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
 import { App } from './app';
 
 describe('App', () => {
   beforeEach(async () => {
+    localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [App],
-    })
-      .compileComponents();
+      providers: [provideZonelessChangeDetection(), provideRouter([]), provideHttpClient()],
+    }).compileComponents();
   });
 
-  it('should create the app', () => {
+  it('se crea la app', () => {
     const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
+    expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('should render title', async () => {
+  it('sin sesión el menú solo muestra Login y Registro', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, frontend');
+    const texto = fixture.nativeElement.textContent;
+    expect(texto).toContain('Login');
+    expect(texto).toContain('Registro');
+    expect(texto).not.toContain('Carrito');
   });
 });

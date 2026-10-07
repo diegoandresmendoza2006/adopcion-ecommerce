@@ -1,0 +1,30 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="logo">🐾</div>
+    <h2>Paws&Shop</h2>
+    <p class="subtitulo">Inicia sesión para adoptar y comprar</p>
+
+    <form (ngSubmit)="onLogin()">
+      <div class="form-group">
+        <label for="correo">Correo electrónico</label>
+        <input id="correo" type="email" [(ngModel)]="credentials.username" name="username"
+               placeholder="tucorreo@ejemplo.com" autocomplete="email" required>
+      </div>
+
+      <div class="form-group">
+        <label for="clave">Contraseña</label>
+        <input id="clave" type="password" [(ngModel)]="credentials.password" name="password"
+               placeholder="Tu contraseña" autocomplete="current-password" required>
+      </div>
+
+      @if (errorMessage()) { <div class="alerta error">{{ errorMessage() }}</div> }
+      @if (mensaje()) { <div class="alerta ok">{{ mensaje() }}</div> }
+
+      <button type="submit" class="btn-submit" [disabled]="enviando()">
+        {{ enviando() ? 'Ingresando...' : 'Iniciar sesión' }}
+      </button>
+    </form>
+
+    <p class="pie">¿No tienes cuenta? <a routerLink="/register">Regístrate</a></p>
+  </div>
+</div>

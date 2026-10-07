@@ -1,0 +1,66 @@
+<div class="encargado-container">
+  <h2>Revisión de Solicitudes de Adopción</h2>
+  <p>Abre el formulario de cada solicitud, léelo y decide si la apruebas o la rechazas</p>
+
+  @if (ok()) { <p class="msg-ok">{{ ok() }}</p> }
+  @if (error()) { <p class="msg-error">{{ error() }}</p> }
+
+  <div class="table-box">
+    <table class="tabla-encargado">
+      <thead>
+        <tr>
+          <th>Adoptante</th>
+          <th>Mascota</th>
+          <th>Fecha</th>
+          <th>Estado</th>
+          <th>Formulario</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of solicitudes(); track s.id) {
+          <tr>
+            <td>{{ s.adoptante_nombre }}</td>
+            <td class="font-bold">{{ s.mascota_nombre }}</td>
+            <td>{{ s.fecha_solicitud | date:'dd/MM/yyyy' }}</td>
+            <td>{{ s.estado }}</td>
+            <td>
+              <button class="btn-aprobar" style="background: #0d6efd;" (click)="alternar(s.id)">
+                {{ abierta() === s.id ? 'Cerrar' : '📄 Revisar' }}
+              </button>
+            </td>
+          </tr>
+
+          @if (abierta() === s.id) {
+            <tr>
+              <td colspan="5" style="background: #f8fafc; padding: 18px 22px;">
+                <h4 style="margin: 0 0 12px 0; color: #2c3e50;">Formulario de adopción de {{ s.mascota_nombre }}</h4>
+
+                @if (tieneFormulario(s)) {
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 14px;">
+                    <div><strong>Nombre:</strong><br>{{ s.nombre_contacto || '—' }}</div>
+                    <div><strong>Teléfono:</strong><br>{{ s.telefono || '—' }}</div>
+                    <div><strong>Tipo de vivienda:</strong><br>{{ s.tipo_vivienda || '—' }}</div>
+                  </div>
+                  <div style="margin-bottom: 16px;">
+                    <strong>¿Por qué desea adoptar?</strong>
+                    <p style="margin: 6px 0 0 0; white-space: pre-wrap; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px;">{{ s.motivo || '—' }}</p>
+                  </div>
+                } @else {
+                  <p class="msg-vacio">Esta solicitud se envió antes de que existiera el formulario, por eso no tiene datos.</p>
+                }
+
+                @if (s.estado === 'En Revisión') {
+                  <button class="btn-aprobar" (click)="aprobar(s)">✔ Aprobar adopción</button>
+                  <button class="btn-rechazar" (click)="rechazar(s)">✖ Rechazar</button>
+                } @else {
+                  <p style="margin: 0;"><strong>Esta solicitud ya fue resuelta: {{ s.estado }}.</strong></p>
+                }
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+  @if (solicitudes().length === 0) { <p class="msg-vacio">No hay solicitudes por revisar.</p> }
+</div>

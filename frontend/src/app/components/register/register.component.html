@@ -1,0 +1,36 @@
+<div class="register-container">
+  <div class="register-card">
+    <div class="logo">🐾</div>
+    <h2>Crea tu cuenta</h2>
+    <p class="subtitulo">Únete a Paws&Shop para adoptar y comprar</p>
+
+    <form (ngSubmit)="onRegister()">
+      <div class="form-group">
+        <label for="nombre">Nombre completo</label>
+        <input id="nombre" type="text" [(ngModel)]="usuario.nombre_completo" name="nombre_completo"
+               placeholder="Tu nombre y apellido" autocomplete="name" required>
+      </div>
+
+      <div class="form-group">
+        <label for="correo">Correo electrónico</label>
+        <input id="correo" type="email" [(ngModel)]="usuario.email" name="email"
+               placeholder="tucorreo@ejemplo.com" autocomplete="email" required>
+      </div>
+
+      <div class="form-group">
+        <label for="clave">Contraseña</label>
+        <input id="clave" type="password" [(ngModel)]="usuario.password" name="password"
+               placeholder="Mínimo 6 caracteres" minlength="6" autocomplete="new-password" required>
+      </div>
+
+      @if (errorMessage()) { <div class="alerta error">{{ errorMessage() }}</div> }
+      @if (mensaje()) { <div class="alerta ok">{{ mensaje() }}</div> }
+
+      <button type="submit" class="btn-submit" [disabled]="enviando()">
+        {{ enviando() ? 'Creando cuenta...' : 'Registrarse' }}
+      </button>
+    </form>
+
+    <p class="pie">¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a></p>
+  </div>
+</div>
