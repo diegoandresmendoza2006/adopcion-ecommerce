@@ -2,6 +2,56 @@
   <h2>Tienda de Productos Solidaria</h2>
   <p>Apoya a nuestros refugios comprando accesorios y alimentos</p>
 
+  <!-- Búsqueda y filtros -->
+  <div class="filtros">
+    <div class="campo">
+      <label for="q">Buscar producto</label>
+      <input id="q" type="search" placeholder="Ej: Alimento" [value]="texto()"
+             (input)="alEscribir('texto', $any($event.target).value)">
+    </div>
+
+    <div class="campo">
+      <label for="categoria">Categoría</label>
+      <select id="categoria" [value]="categoriaId()" (change)="setCategoria($any($event.target).value)">
+        <option value="">Todas</option>
+        @for (c of categorias(); track c.id) {
+          <option [value]="c.id">{{ c.nombre }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="campo">
+      <label for="pmin">Precio mínimo ($)</label>
+      <input id="pmin" type="number" min="0" placeholder="0" [value]="precioMin()"
+             (input)="alEscribir('precioMin', $any($event.target).value)">
+    </div>
+
+    <div class="campo">
+      <label for="pmax">Precio máximo ($)</label>
+      <input id="pmax" type="number" min="0" placeholder="Sin límite" [value]="precioMax()"
+             (input)="alEscribir('precioMax', $any($event.target).value)">
+    </div>
+
+    <div class="campo">
+      <label for="orden">Ordenar por</label>
+      <select id="orden" [value]="orden()" (change)="setOrden($any($event.target).value)">
+        <option value="recientes">Más recientes</option>
+        <option value="precio_asc">Precio: de menor a mayor</option>
+        <option value="precio_desc">Precio: de mayor a menor</option>
+        <option value="nombre">Nombre (A-Z)</option>
+      </select>
+    </div>
+
+    <div class="campo check">
+      <input id="stock" type="checkbox" [checked]="soloConStock()" (change)="setSoloConStock($any($event.target).checked)">
+      <label for="stock">Solo con stock</label>
+    </div>
+
+    @if (hayFiltros()) {
+      <button type="button" class="limpiar" (click)="limpiar()">✖ Limpiar filtros</button>
+    }
+  </div>
+
   @if (cargando()) { <p class="msg-vacio">Cargando productos...</p> }
   @if (error()) { <p class="msg-error">{{ error() }}</p> }
   @if (aviso()) { <p class="msg-ok">{{ aviso() }}</p> }
@@ -33,7 +83,12 @@
     }
   </div>
 
-  @if (!cargando() && !error() && productos().length === 0) {
-    <p class="msg-vacio">Todavía no hay productos en la tienda.</p>
+  @if (!cargando() && !error() && total() === 0) {
+    <p class="msg-vacio">
+      {{ hayFiltros() ? 'No se encontraron productos con esos filtros. Prueba quitando alguno.' : 'Todavía no hay productos en la tienda.' }}
+    </p>
   }
+
+  <app-paginacion [pagina]="pagina()" [paginas]="paginas()" [total]="total()" [porPagina]="porPagina"
+                  (cambiar)="irAPagina($event)"></app-paginacion>
 </div>
