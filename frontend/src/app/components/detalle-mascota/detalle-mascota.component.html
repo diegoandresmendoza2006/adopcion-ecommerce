@@ -31,7 +31,14 @@
 
         <p class="seccion-titulo"><strong>Historia:</strong></p>
         <p class="desc">{{ m.descripcion || 'Sin descripción.' }}</p>
-
+          @if (refugio(); as r) {
+          <div class="refugio-card">
+            <p class="seccion-titulo"><strong>🏠 Refugio responsable</strong></p>
+            <p class="refugio-nombre">{{ r.nombre }}</p>
+            @if (r.direccion) { <p>📍 {{ r.direccion }}</p> }
+            @if (r.telefono) { <p>📞 <a [href]="'tel:' + r.telefono">{{ r.telefono }}</a></p> }
+          </div>
+        }
         <div class="acciones">
           <a routerLink="/catalogo" class="btn-volver">Volver al Catálogo</a>
           @if (disponible(m)) {

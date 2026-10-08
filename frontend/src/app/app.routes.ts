@@ -18,9 +18,11 @@ import { AdminDashboardComponent } from './components/admin-dashboard/admin-dash
 import { AdminEncargadosComponent } from './components/admin-encargados/admin-encargados.component';
 import { AdminAuditoriaComponent } from './components/admin-auditoria/admin-auditoria.component';
 
+import { AdminRefugiosComponent } from './components/admin-refugios/admin-refugios.component';
 import { rolGuard } from './guards/guards';
 import { AuthService } from './services/auth.service';
 import { ROL_ADMIN, ROL_ENCARGADO, ROL_USUARIO } from './services/api.config';
+
 
 export const routes: Routes = [
   // Públicas
@@ -38,8 +40,8 @@ export const routes: Routes = [
   { path: 'carrito', component: CarritoComponent, canActivate: [rolGuard(ROL_USUARIO)] },
 
   // Solo ENCARGADO de refugio
-  { path: 'encargado-mascotas', component: EncargadoMascotasComponent, canActivate: [rolGuard(ROL_ENCARGADO)] },
-  { path: 'encargado-productos', component: EncargadoProductosComponent, canActivate: [rolGuard(ROL_ENCARGADO)] },
+  { path: 'encargado-mascotas', component: EncargadoMascotasComponent, canActivate: [rolGuard(ROL_ADMIN, ROL_ENCARGADO)] },
+  { path: 'encargado-productos', component: EncargadoProductosComponent, canActivate: [rolGuard(ROL_ADMIN, ROL_ENCARGADO)] },
   { path: 'encargado-solicitudes', component: EncargadoSolicitudesComponent, canActivate: [rolGuard(ROL_ENCARGADO)] },
   { path: 'encargado-ver-seguimientos', component: EncargadoVerSeguimientosComponent, canActivate: [rolGuard(ROL_ENCARGADO)] },
 
@@ -47,6 +49,7 @@ export const routes: Routes = [
   { path: 'admin-dashboard', component: AdminDashboardComponent, canActivate: [rolGuard(ROL_ADMIN)] },
   { path: 'admin-encargados', component: AdminEncargadosComponent, canActivate: [rolGuard(ROL_ADMIN)] },
   { path: 'admin-auditoria', component: AdminAuditoriaComponent, canActivate: [rolGuard(ROL_ADMIN)] },
+  { path: 'admin-refugios', component: AdminRefugiosComponent, canActivate: [rolGuard(ROL_ADMIN)] },
 
   // Cualquier otra dirección te lleva a la página de inicio de TU rol
   { path: '', pathMatch: 'full', redirectTo: () => inject(AuthService).rutaInicio() },
