@@ -2,7 +2,7 @@
   <div class="header-flex">
     <div>
       <h2>Inventario de Mascotas (Sede Asignada)</h2>
-      <p>Gestión y registro de animales en el refugio</p>
+      <p>Gestión, edición y registro de animales en el refugio</p>
     </div>
     <button class="btn-primary" (click)="registrarMascota()">{{ mostrarForm() ? 'Cancelar' : '+ Registrar Mascota' }}</button>
   </div>
@@ -12,6 +12,7 @@
 
   @if (mostrarForm()) {
     <form class="form-panel" (ngSubmit)="guardar()">
+      <h3 class="full">{{ editandoId() === null ? 'Nueva mascota' : 'Editando mascota #' + editandoId() }}</h3>
       <div><label>Nombre</label><input [(ngModel)]="nueva.nombre" name="nombre" required></div>
       <div><label>Especie</label>
         <select [(ngModel)]="nueva.especie" name="especie">
@@ -20,6 +21,13 @@
       </div>
       <div><label>Raza</label><input [(ngModel)]="nueva.raza" name="raza"></div>
       <div><label>Edad (en meses)</label><input type="number" min="0" [(ngModel)]="nueva.edad_meses" name="edad_meses" required></div>
+      @if (editandoId() !== null) {
+        <div><label>Estado</label>
+          <select [(ngModel)]="nueva.estado_adopcion" name="estado_adopcion">
+            @for (e of estados; track e) { <option [value]="e">{{ e }}</option> }
+          </select>
+        </div>
+      }
       @if (esAdmin) {
         <div><label>Refugio</label>
           <select [(ngModel)]="nueva.refugio_id" name="refugio_id" required>
@@ -33,7 +41,11 @@
         <app-subir-foto [(url)]="fotoUrl" (subiendoChange)="subiendoFoto.set($event)"></app-subir-foto>
       </div>
       <div class="full"><label>Descripción</label><textarea rows="2" [(ngModel)]="nueva.descripcion" name="descripcion"></textarea></div>
-      <div class="full"><button type="submit" [disabled]="enviando() || subiendoFoto()">{{ enviando() ? 'Guardando...' : 'Guardar mascota' }}</button></div>
+      <div class="full">
+        <button type="submit" [disabled]="enviando() || subiendoFoto()">
+          {{ subiendoFoto() ? 'Subiendo foto...' : enviando() ? 'Guardando...' : (editandoId() === null ? 'Guardar mascota' : 'Guardar cambios') }}
+        </button>
+      </div>
     </form>
   }
 
@@ -46,6 +58,7 @@
           <th>Raza</th>
           <th>Edad</th>
           <th>Estado</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -55,7 +68,25 @@
             <td>{{ m.especie }}</td>
             <td>{{ m.raza }}</td>
             <td>{{ edadTexto(m) }}</td>
-            <td>{{ m.estado_adopcion }}</td>
+            <td>
+              <select class="select-estado" [value]="m.estado_adopcion" (change)="cambiarEstado(m, $any($event.target).value)" aria-label="Cambiar estado">
+                @for (e of estados; track e) { <option [value]="e" [selected]="e === m.estado_adopcion">{{ e }}</option> }
+              </select>
+            </td>
+                        <td class="acciones-fila">
+              @if (forzarId() === m.id) {
+                <span class="confirmar">Se borrará también su historial de solicitudes. ¿Seguro?</span>
+                <button type="button" class="btn-sm btn-eliminar" (click)="eliminarForzado(m)">Eliminar todo</button>
+                <button type="button" class="btn-sm" (click)="cancelarForzado()">Cancelar</button>
+              } @else if (confirmandoId() === m.id) {
+                <span class="confirmar">¿Eliminar a {{ m.nombre }}?</span>
+                <button type="button" class="btn-sm btn-eliminar" (click)="eliminar(m)">Sí, eliminar</button>
+                <button type="button" class="btn-sm" (click)="cancelarEliminar()">No</button>
+              } @else {
+                <button type="button" class="btn-sm btn-editar" (click)="editar(m)">✏️ Editar</button>
+                <button type="button" class="btn-sm btn-eliminar" (click)="pedirEliminar(m)">🗑️ Eliminar</button>
+              }
+            </td>
           </tr>
         }
       </tbody>

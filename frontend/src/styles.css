@@ -15,3 +15,26 @@ body { margin: 0; font-family: Arial, sans-serif; }
 .form-panel .full { grid-column: 1 / -1; }
 .form-panel button { padding: 10px; border: none; border-radius: 4px; background: #28a745; color: #fff; cursor: pointer; }
 .form-panel button:disabled { opacity: .6; cursor: not-allowed; }
+
+
+
+/* Barra de filtros reutilizable (catálogo y tienda) */
+.filtros { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; background: #fff; padding: 14px 16px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); max-width: 1100px; margin: 0 auto 22px; text-align: left; }
+.filtros .campo { display: flex; flex-direction: column; gap: 4px; }
+.filtros label { font-size: 12px; font-weight: bold; color: #555; }
+.filtros input[type=search], .filtros input[type=number], .filtros select { padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; min-width: 140px; box-sizing: border-box; }
+.filtros input[type=number] { min-width: 100px; width: 110px; }
+.filtros .check { flex-direction: row; align-items: center; gap: 6px; padding-bottom: 8px; }
+.filtros .check label { font-size: 13px; font-weight: normal; }
+.filtros .limpiar { padding: 8px 14px; border: 1px solid #b42318; color: #b42318; background: #fff; border-radius: 6px; cursor: pointer; font-size: 13px; }
+
+/* ---- Botones de editar / eliminar en tablas (CRUD) ---- */
+.btn-sm { padding: 5px 10px; margin: 2px; border: 1px solid #9aa5b1; border-radius: 4px; background: #fff; color: #333; cursor: pointer; font-size: 12px; }
+.btn-sm:hover { background: #f1f3f5; }
+.btn-editar { border-color: #1c7ed6; color: #1c7ed6; }
+.btn-editar:hover { background: #e7f1fb; }
+.btn-eliminar { border-color: #b42318; color: #b42318; }
+.btn-eliminar:hover { background: #fdecea; }
+.acciones-fila { white-space: nowrap; }
+.confirmar { color: #b42318; font-weight: bold; font-size: 12px; margin-right: 4px; }
+.select-estado { padding: 4px; border: 1px solid #ccc; border-radius: 4px; }

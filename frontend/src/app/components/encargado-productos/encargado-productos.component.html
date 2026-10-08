@@ -15,6 +15,7 @@
       <p class="msg-error">No hay categorías en la base de datos (tabla categorias_productos). Crea al menos una para poder subir productos.</p>
     }
     <form class="form-panel" (ngSubmit)="guardar()">
+      <h3 class="full">{{ editandoId() === null ? 'Nuevo producto' : 'Editando producto #' + editandoId() }}</h3>
       <div><label>Nombre</label><input [(ngModel)]="nuevo.nombre" name="nombre" required></div>
       <div><label>Categoría</label>
         <select [(ngModel)]="nuevo.categoria_id" name="categoria_id" required>
@@ -29,7 +30,11 @@
         <app-subir-foto [(url)]="fotoUrl" (subiendoChange)="subiendoFoto.set($event)"></app-subir-foto>
       </div>
       <div class="full"><label>Descripción</label><textarea rows="2" [(ngModel)]="nuevo.descripcion" name="descripcion"></textarea></div>
-      <div class="full"><button type="submit" [disabled]="enviando() || subiendoFoto()">{{ enviando() ? 'Guardando...' : 'Guardar producto' }}</button></div>
+      <div class="full">
+        <button type="submit" [disabled]="enviando() || subiendoFoto()">
+          {{ subiendoFoto() ? 'Subiendo foto...' : enviando() ? 'Guardando...' : (editandoId() === null ? 'Guardar producto' : 'Guardar cambios') }}
+        </button>
+      </div>
     </form>
   }
 
@@ -38,16 +43,30 @@
       <thead>
         <tr>
           <th>Producto</th>
+          <th>Categoría</th>
           <th>Precio</th>
           <th>Stock</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
         @for (p of productos(); track p.id) {
           <tr>
             <td class="font-bold">{{ p.nombre }}</td>
+            <td>{{ nombreCategoria(p.categoria_id) }}</td>
             <td>${{ p.precio | number:'1.2-2' }}</td>
-            <td>{{ p.stock }} unidades</td>
+            <td>{{ p.stock > 0 ? p.stock + ' unidades' : 'Agotado' }}</td>
+            <td class="acciones-fila">
+              @if (confirmandoId() === p.id) {
+                <span class="confirmar">¿Eliminar "{{ p.nombre }}"?</span>
+                <button type="button" class="btn-sm btn-eliminar" (click)="eliminar(p)">Sí, eliminar</button>
+                <button type="button" class="btn-sm" (click)="cancelarEliminar()">No</button>
+              } @else {
+                <button type="button" class="btn-sm btn-editar" (click)="editar(p)">✏️ Editar</button>
+                @if (p.stock > 0) { <button type="button" class="btn-sm" (click)="agotar(p)">Agotar</button> }
+                <button type="button" class="btn-sm btn-eliminar" (click)="pedirEliminar(p)">🗑️ Eliminar</button>
+              }
+            </td>
           </tr>
         }
       </tbody>

@@ -2,11 +2,60 @@
   <h2>Catálogo de Mascotas</h2>
   <p>Encuentra a tu nuevo mejor amigo</p>
 
+  <!-- Búsqueda y filtros -->
+  <div class="filtros">
+    <div class="campo">
+      <label for="raza">Raza</label>
+      <input id="raza" type="search" placeholder="Ej: Labrador" [value]="raza()"
+             (input)="alEscribirRaza($any($event.target).value)">
+    </div>
+
+    <div class="campo">
+      <label for="especie">Especie</label>
+      <select id="especie" [value]="especie()" (change)="setEspecie($any($event.target).value)">
+        <option value="">Todas</option>
+        <option value="Perro">Perros</option>
+        <option value="Gato">Gatos</option>
+        <option value="Otro">Otros</option>
+      </select>
+    </div>
+
+    <div class="campo">
+      <label for="edad">Edad</label>
+      <select id="edad" [value]="rangoEdad()" (change)="setEdad($any($event.target).value)">
+        <option value="">Cualquiera</option>
+        <option value="cachorro">Cachorro (menos de 1 año)</option>
+        <option value="joven">Joven (1 a 2 años)</option>
+        <option value="adulto">Adulto (3 a 7 años)</option>
+        <option value="senior">Senior (8 años o más)</option>
+      </select>
+    </div>
+
+    <div class="campo">
+      <label for="orden">Ordenar por</label>
+      <select id="orden" [value]="orden()" (change)="setOrden($any($event.target).value)">
+        <option value="recientes">Más recientes</option>
+        <option value="nombre">Nombre (A-Z)</option>
+        <option value="edad_asc">Edad: de menor a mayor</option>
+        <option value="edad_desc">Edad: de mayor a menor</option>
+      </select>
+    </div>
+
+    <div class="campo check">
+      <input id="soloDisp" type="checkbox" [checked]="soloDisponibles()" (change)="setSoloDisponibles($any($event.target).checked)">
+      <label for="soloDisp">Solo disponibles</label>
+    </div>
+
+    @if (hayFiltros()) {
+      <button type="button" class="limpiar" (click)="limpiar()">✖ Limpiar filtros</button>
+    }
+  </div>
+
   @if (cargando()) { <p class="msg-vacio">Cargando mascotas...</p> }
   @if (error()) { <p class="msg-error">{{ error() }}</p> }
 
   <div class="grid-mascotas">
-    @for (mascota of ordenadas(); track mascota.id) {
+    @for (mascota of mascotas(); track mascota.id) {
       <div class="card-mascota" [class.adoptada]="esAdoptada(mascota)">
 
         <div class="foto">
@@ -39,7 +88,12 @@
     }
   </div>
 
-  @if (!cargando() && !error() && mascotas().length === 0) {
-    <div class="msg-vacio">No hay mascotas registradas para mostrar.</div>
+  @if (!cargando() && !error() && total() === 0) {
+    <div class="msg-vacio">
+      {{ hayFiltros() ? 'No se encontraron mascotas con esos filtros. Prueba quitando alguno.' : 'No hay mascotas registradas para mostrar.' }}
+    </div>
   }
+
+  <app-paginacion [pagina]="pagina()" [paginas]="paginas()" [total]="total()" [porPagina]="porPagina"
+                  (cambiar)="irAPagina($event)"></app-paginacion>
 </div>

@@ -21,6 +21,13 @@ export class ApiService {
   patch<T = any>(ruta: string, cuerpo: any): Observable<T> {
     return this.http.patch<T>(`${API_URL}${ruta}`, cuerpo);
   }
+    put<T = any>(ruta: string, cuerpo: any): Observable<T> {
+    return this.http.put<T>(`${API_URL}${ruta}`, cuerpo);
+  }
+
+  delete<T = any>(ruta: string): Observable<T> {
+    return this.http.delete<T>(`${API_URL}${ruta}`);
+  }
 
   descargar(ruta: string): Observable<Blob> {
     return this.http.get(`${API_URL}${ruta}`, { responseType: 'blob' });

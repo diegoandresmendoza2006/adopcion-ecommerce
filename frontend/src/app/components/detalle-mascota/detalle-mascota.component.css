@@ -97,3 +97,7 @@
 .btn-solicitar:hover {
   background-color: #218838;
 }
+
+.refugio-card { margin: 16px 0; padding: 12px 16px; background: #f1faf3; border: 1px solid #c8e6d0; border-radius: 8px; }
+.refugio-card p { margin: 4px 0; }
+.refugio-nombre { font-weight: bold; font-size: 16px; }

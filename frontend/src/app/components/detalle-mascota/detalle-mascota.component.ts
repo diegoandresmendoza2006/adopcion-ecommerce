@@ -14,6 +14,7 @@ import { edadTexto, estaDisponible } from '../../services/formato';
 export class DetalleMascotaComponent implements OnInit {
   mascota = signal<any | null>(null);
   cargando = signal(true);
+  refugio = signal<any | null>(null);
   error = signal('');
 
   constructor(private route: ActivatedRoute, private api: ApiService) {}
@@ -21,9 +22,10 @@ export class DetalleMascotaComponent implements OnInit {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     this.api.get(`/mascotas/${id}`).subscribe({
-      next: (m) => {
+        next: (m) => {
         this.mascota.set(m);
         this.cargando.set(false);
+        this.cargarRefugio(m?.refugio_id);
       },
       error: (err) => {
         this.cargando.set(false);
@@ -31,7 +33,14 @@ export class DetalleMascotaComponent implements OnInit {
       }
     });
   }
-
+    // Trae los datos del refugio al que pertenece la mascota (si falla, simplemente no se muestra la tarjeta)
+  private cargarRefugio(refugioId: number | undefined): void {
+    if (!refugioId) return;
+    this.api.get<any[]>('/refugios/').subscribe({
+      next: (lista) => this.refugio.set(lista.find(r => r.id === refugioId) ?? null),
+      error: () => this.refugio.set(null)
+    });
+  }
   edadTexto(m: any): string {
     return edadTexto(m?.edad_meses);
   }
