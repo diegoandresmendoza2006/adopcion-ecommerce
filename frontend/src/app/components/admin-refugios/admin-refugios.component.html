@@ -1,0 +1,54 @@
+<div class="crud-container" style="max-width: 900px; margin: 20px auto; padding: 0 16px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+    <div>
+      <h2>Refugios</h2>
+      <p>Crea, edita o elimina las sedes del sistema</p>
+    </div>
+    <button class="btn-sm btn-editar" (click)="nuevo()">{{ mostrarForm() ? 'Cancelar' : '+ Nuevo refugio' }}</button>
+  </div>
+
+  @if (ok()) { <p class="msg-ok">{{ ok() }}</p> }
+  @if (error()) { <p class="msg-error">{{ error() }}</p> }
+
+  @if (mostrarForm()) {
+    <form class="form-panel" (ngSubmit)="guardar()">
+      <h3 class="full">{{ editandoId() === null ? 'Nuevo refugio' : 'Editando refugio #' + editandoId() }}</h3>
+      <div><label>Nombre</label><input [(ngModel)]="form.nombre" name="nombre" required maxlength="100"></div>
+      <div><label>Teléfono</label><input [(ngModel)]="form.telefono" name="telefono" maxlength="20"></div>
+      <div class="full"><label>Dirección</label><input [(ngModel)]="form.direccion" name="direccion" maxlength="255"></div>
+      <div class="full">
+        <button type="submit" [disabled]="enviando()">
+          {{ enviando() ? 'Guardando...' : (editandoId() === null ? 'Crear refugio' : 'Guardar cambios') }}
+        </button>
+      </div>
+    </form>
+  }
+
+  <table class="tabla-crud" style="width: 100%; border-collapse: collapse; margin-top: 14px;">
+    <thead>
+      <tr style="text-align: left; border-bottom: 2px solid #ddd;">
+        <th>Nombre</th><th>Dirección</th><th>Teléfono</th><th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (r of refugios(); track r.id) {
+        <tr style="border-bottom: 1px solid #eee;">
+          <td class="font-bold">{{ r.nombre }}</td>
+          <td>{{ r.direccion }}</td>
+          <td>{{ r.telefono }}</td>
+          <td class="acciones-fila">
+            @if (confirmandoId() === r.id) {
+              <span class="confirmar">¿Eliminar "{{ r.nombre }}"?</span>
+              <button type="button" class="btn-sm btn-eliminar" (click)="eliminar(r)">Sí, eliminar</button>
+              <button type="button" class="btn-sm" (click)="cancelarEliminar()">No</button>
+            } @else {
+              <button type="button" class="btn-sm btn-editar" (click)="editar(r)">✏️ Editar</button>
+              <button type="button" class="btn-sm btn-eliminar" (click)="pedirEliminar(r)">🗑️ Eliminar</button>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  @if (refugios().length === 0) { <p class="msg-vacio">No hay refugios registrados.</p> }
+</div>
