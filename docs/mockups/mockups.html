@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockups - Paws&Shop</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: "Segoe UI", Arial, sans-serif; background:#fff; color:#222; font-size:14px; }
+
+  /* Barra del simulador (no es parte del diseño) */
+  .sim { background:#222; color:#ddd; padding:8px 14px; font-size:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .sim button { background:#444; color:#fff; border:0; padding:5px 12px; cursor:pointer; font-size:12px; }
+  .sim button.on { background:#fff; color:#222; }
+  .sim .pant { margin-left:auto; color:#aaa; }
+
+  /* Marco del boceto */
+  .marco { max-width:960px; margin:24px auto; border:2px solid #222; min-height:560px; }
+  .barra { border-bottom:2px solid #222; padding:10px 16px; display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .logo { font-weight:bold; margin-right:14px; border:1px solid #222; padding:4px 10px; }
+  .barra a { padding:5px 10px; border:1px solid transparent; cursor:pointer; }
+  .barra a:hover { border-color:#222; }
+  .barra .der { margin-left:auto; }
+  .cont { padding:24px; }
+  .vista { display:none; } .vista.activa { display:block; }
+
+  h2 { margin:0 0 4px; font-size:20px; } .sub { color:#777; margin:0 0 18px; }
+  .nota { background:#f2f2f2; border-left:4px solid #888; padding:8px 12px; margin-bottom:16px; font-size:12px; color:#555; }
+
+  /* Elementos de wireframe */
+  .btn { display:inline-block; border:2px solid #222; background:#222; color:#fff; padding:7px 16px; cursor:pointer; }
+  .btn.o { background:#fff; color:#222; }
+  .mini { display:inline-block; border:1px solid #222; padding:3px 9px; font-size:12px; cursor:pointer; margin-right:4px; background:#fff; }
+  .mini.peligro { border-style:dashed; }
+  .campo { border:1px solid #555; height:32px; padding:7px 9px; color:#999; background:#fff; }
+  .campo.alto { height:80px; }
+  .lbl { font-size:12px; font-weight:bold; margin:0 0 4px; display:block; }
+  .foto { border:1px solid #555; background:#f2f2f2; display:flex; align-items:center; justify-content:center; color:#888; height:120px;
+          background-image:linear-gradient(to top right, transparent calc(50% - 1px), #aaa, transparent calc(50% + 1px)),linear-gradient(to bottom right, transparent calc(50% - 1px), #aaa, transparent calc(50% + 1px)); }
+  .foto span { background:#f2f2f2; padding:0 6px; }
+  .tarjetas { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:16px; }
+  .tarjeta { border:1px solid #555; padding:10px; display:flex; flex-direction:column; gap:6px; }
+  .tarjeta b { font-size:15px; } .tarjeta small { color:#777; }
+  .etq { display:inline-block; border:1px solid #222; padding:1px 8px; font-size:11px; }
+  .filtros { border:1px dashed #888; padding:12px; display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; align-items:end; margin-bottom:18px; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; border-bottom:2px solid #222; padding:8px; font-size:12px; text-transform:uppercase; letter-spacing:.3px; }
+  td { padding:9px 8px; border-bottom:1px solid #ccc; }
+  .fila { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+  .form { display:grid; grid-template-columns:1fr 1fr; gap:14px; } .form .full { grid-column:1/-1; }
+  .zona { border:2px dashed #888; padding:20px; text-align:center; color:#777; }
+  .pag { display:flex; gap:6px; justify-content:center; margin-top:18px; }
+  .pag span { border:1px solid #555; padding:4px 10px; } .pag .a { background:#222; color:#fff; }
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; }
+  .kpi { border:1px solid #555; padding:14px; } .kpi small { color:#777; } .kpi b { display:block; font-size:24px; margin-top:4px; }
+  .dos { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .caja { border:1px solid #555; padding:12px; margin:14px 0; }
+  .centro { max-width:340px; margin:30px auto; border:1px solid #555; padding:24px; }
+  .centro .campo { margin-bottom:12px; }
+  .alerta { border:1px solid #222; padding:8px 12px; margin-bottom:14px; }
+  .alerta.err { border-style:dashed; }
+  @media (max-width:700px){ .form,.dos{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- SIMULADOR (solo sirve para navegar el mockup) -->
+<div class="sim">
+  <span>Ver como:</span>
+  <button data-rol="usuario" onclick="cambiarRol('usuario')">Usuario</button>
+  <button data-rol="encargado" onclick="cambiarRol('encargado')">Encargado</button>
+  <button data-rol="admin" onclick="cambiarRol('admin')">Administrador</button>
+  <span class="pant">Pantalla: <b id="nombre-pantalla">Login</b></span>
+</div>
+
+<div class="marco">
+  <!-- MENÚ: cambia según el rol -->
+  <div class="barra" id="barra">
+    <span class="logo">Paws&amp;Shop</span>
+    <span id="menu"></span>
+    <a class="der" id="salir" onclick="salir()" style="display:none">Salir</a>
+  </div>
+
+  <div class="cont">
+
+<!-- ===== ACCESO ===== -->
+<section id="v-login" class="vista activa" data-nombre="Login">
+  <div class="centro">
+    <h2>Iniciar sesión</h2><p class="sub">Accede con tu cuenta</p>
+    <span class="lbl">Correo</span><div class="campo">correo@ejemplo.com</div>
+    <span class="lbl">Contraseña</span><div class="campo">••••••••</div>
+    <span class="btn" style="width:100%;text-align:center" onclick="cambiarRol('usuario')">Ingresar</span>
+    <p style="text-align:center;margin:14px 0 0">¿No tienes cuenta? <u style="cursor:pointer" onclick="ir('registro')">Regístrate</u></p>
+  </div>
+  <p class="nota">Cada rol entra a su propia pantalla de inicio: usuario al catálogo, encargado a su inventario y administrador al dashboard.</p>
+</section>
+
+<section id="v-registro" class="vista" data-nombre="Registro">
+  <div class="centro">
+    <h2>Crear cuenta</h2><p class="sub">Registro de usuario</p>
+    <span class="lbl">Nombre completo</span><div class="campo"></div>
+    <span class="lbl">Correo</span><div class="campo"></div>
+    <span class="lbl">Contraseña</span><div class="campo"></div>
+    <span class="btn" style="width:100%;text-align:center" onclick="ir('login')">Registrarme</span>
+  </div>
+</section>
+
+<!-- ===== USUARIO ===== -->
+<section id="v-catalogo" class="vista" data-nombre="Catálogo de mascotas">
+  <h2>Mascotas en adopción</h2><p class="sub">Listado con filtros y paginación</p>
+  <div class="filtros">
+    <div><span class="lbl">Raza</span><div class="campo"></div></div>
+    <div><span class="lbl">Edad mín. (meses)</span><div class="campo"></div></div>
+    <div><span class="lbl">Edad máx. (meses)</span><div class="campo"></div></div>
+    <div><span class="lbl">Orden</span><div class="campo">Más recientes ▾</div></div>
+    <span class="btn">Buscar</span>
+  </div>
+  <div class="tarjetas">
+    <div class="tarjeta"><div class="foto"><span>foto</span></div><b>Nombre</b><small>Especie · Raza · Edad</small><span class="mini" onclick="ir('detalle')">Ver detalle</span></div>
+    <div class="tarjeta"><div class="foto"><span>foto</span></div><b>Nombre</b><small>Especie · Raza · Edad</small><span class="mini" onclick="ir('detalle')">Ver detalle</span></div>
+    <div class="tarjeta"><div class="foto"><span>foto</span></div><b>Nombre</b><small>Especie · Raza · Edad</small><span class="etq">En proceso</span></div>
+    <div class="tarjeta"><div class="foto"><span>foto</span></div><b>Nombre</b><small>Especie · Raza · Edad</small><span class="etq">Adoptado</span></div>
+  </div>
+  <div class="pag"><span>«</span><span class="a">1</span><span>2</span><span>3</span><span>»</span></div>
+</section>
+
+<section id="v-detalle" class="vista" data-nombre="Detalle de mascota">
+  <p><u style="cursor:pointer" onclick="ir('catalogo')">← Volver</u></p>
+  <div class="dos">
+    <div class="foto" style="height:260px"><span>foto grande</span></div>
+    <div>
+      <h2>Nombre de la mascota</h2><p class="sub">Raza</p>
+      <p>Especie: ___ &nbsp; Edad: ___ &nbsp; Estado: Disponible</p>
+      <p>Historia: texto de descripción de la mascota.</p>
+      <div class="caja"><b>Refugio responsable</b><br>Nombre del refugio<br>Dirección · Teléfono</div>
+      <span class="btn" onclick="ir('solicitud')">Adoptar</span>
+    </div>
+  </div>
+</section>
+
+<section id="v-solicitud" class="vista" data-nombre="Formulario de adopción">
+  <h2>Solicitud de adopción</h2><p class="sub">Datos del adoptante para evaluar la solicitud</p>
+  <div class="form">
+    <div><span class="lbl">Nombre de contacto</span><div class="campo"></div></div>
+    <div><span class="lbl">Teléfono</span><div class="campo"></div></div>
+    <div><span class="lbl">Tipo de vivienda</span><div class="campo">Casa ▾</div></div><div></div>
+    <div class="full"><span class="lbl">Motivo</span><div class="campo alto"></div></div>
+    <div class="full"><span class="btn" onclick="ir('tramites')">Enviar</span> <span class="btn o" onclick="ir('detalle')">Cancelar</span></div>
+  </div>
+</section>
+
+<section id="v-tienda" class="vista" data-nombre="Tienda">
+  <h2>Tienda</h2><p class="sub">Listado con filtros y paginación</p>
+  <div class="filtros">
+    <div><span class="lbl">Buscar</span><div class="campo"></div></div>
+    <div><span class="lbl">Categoría</span><div class="campo">Todas ▾</div></div>
+    <div><span class="lbl">Precio mín.</span><div class="campo"></div></div>
+    <div><span class="lbl">Precio máx.</span><div class="campo"></div></div>
+    <span class="btn">Buscar</span>
+  </div>
+  <div class="tarjetas">
+    <div class="tarjeta"><div class="foto"><span>foto</span></div><b>Producto</b><small>Categoría</small><b>$ 00.00</b><div><span class="mini">Al carrito</span><span class="mini">Favorito</span></div></div>
+    <div class="tarjeta"><div class="foto"><span>foto</span></div><b>Producto</b><small>Categoría</small><b>$ 00.00</b><div><span class="mini">Al carrito</span><span class="mini">Favorito</span></div></div>
+    <div class="tarjeta"><div class="foto"><span>foto</span></div><b>Producto</b><small>Categoría</small><span class="etq">Agotado</span></div>
+  </div>
+  <div class="pag"><span>«</span><span class="a">1</span><span>2</span><span>»</span></div>
+</section>
+
+<section id="v-favoritos" class="vista" data-nombre="Favoritos">
+  <h2>Favoritos</h2><p class="sub">Productos guardados</p>
+  <div class="tarjetas"><div class="tarjeta"><div class="foto"><span>foto</span></div><b>Producto</b><b>$ 00.00</b><span class="mini">Mover al carrito</span></div></div>
+</section>
+
+<section id="v-carrito" class="vista" data-nombre="Carrito">
+  <h2>Carrito</h2><p class="sub">Resumen del pedido</p>
+  <table><tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th></th></tr>
+    <tr><td>Producto A</td><td>1</td><td>$ 00.00</td><td><span class="mini">Quitar</span></td></tr>
+    <tr><td>Producto B</td><td>2</td><td>$ 00.00</td><td><span class="mini">Quitar</span></td></tr></table>
+  <div class="fila" style="margin-top:16px"><b>Total: $ 00.00</b><span class="btn">Pagar</span></div>
+</section>
+
+<section id="v-tramites" class="vista" data-nombre="Mis trámites">
+  <h2>Mis trámites</h2><p class="sub">Estado de mis solicitudes de adopción</p>
+  <table><tr><th>Mascota</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr>
+    <tr><td>Mascota A</td><td>dd/mm/aaaa</td><td><span class="etq">En revisión</span></td><td>—</td></tr>
+    <tr><td>Mascota B</td><td>dd/mm/aaaa</td><td><span class="etq">Aprobada</span></td><td><span class="mini">Certificado</span></td></tr>
+    <tr><td>Mascota C</td><td>dd/mm/aaaa</td><td><span class="etq">Rechazada</span></td><td>—</td></tr></table>
+</section>
+
+<section id="v-misseg" class="vista" data-nombre="Mis seguimientos">
+  <div class="fila"><div><h2>Mis seguimientos</h2><p class="sub" style="margin:0">Reportes de salud de la mascota adoptada</p></div><span class="btn">Nuevo reporte</span></div>
+  <table><tr><th>Mascota</th><th>Fecha</th><th>Salud</th><th>Observaciones</th></tr>
+    <tr><td>Mascota B</td><td>dd/mm/aaaa</td><td><span class="etq">Excelente</span></td><td>Texto de observaciones</td></tr></table>
+</section>
+
+<!-- ===== MASCOTAS (encargado y admin) ===== -->
+<section id="v-e-mascotas" class="vista" data-nombre="Inventario de mascotas">
+  <div class="fila"><div><h2>Inventario de mascotas</h2><p class="sub" style="margin:0">Listado con edición y eliminación</p></div><span class="btn" onclick="ir('f-mascota')">Registrar</span></div>
+  <table><tr><th>Nombre</th><th>Especie</th><th>Raza</th><th>Edad</th><th>Estado</th><th>Acciones</th></tr>
+    <tr><td>Mascota A</td><td>Perro</td><td>—</td><td>—</td><td>Disponible ▾</td><td><span class="mini" onclick="ir('f-mascota')">Editar</span><span class="mini peligro" onclick="confirmar(this)">Eliminar</span></td></tr>
+    <tr><td>Mascota B</td><td>Gato</td><td>—</td><td>—</td><td>Adoptada ▾</td><td><span class="mini" onclick="ir('f-mascota')">Editar</span><span class="mini peligro" onclick="ir('e-borrar')">Eliminar</span></td></tr></table>
+  <p class="nota" style="margin-top:14px">El encargado ve solo las mascotas de su refugio; el administrador ve todas.</p>
+</section>
+
+<section id="v-e-borrar" class="vista" data-nombre="Eliminar con historial">
+  <h2>Eliminar mascota con historial</h2><p class="sub">Regla de negocio</p>
+  <div class="alerta err">Mensaje: no se puede eliminar, la mascota tiene solicitudes registradas.</div>
+  <div class="caja">Solo el administrador ve esta opción:<br><br><b>Se borrará también su historial. ¿Seguro?</b><br><br><span class="mini peligro">Eliminar todo</span><span class="mini" onclick="ir('e-mascotas')">Cancelar</span></div>
+</section>
+
+<section id="v-f-mascota" class="vista" data-nombre="Formulario de mascota">
+  <h2>Registrar / editar mascota</h2><p class="sub">El mismo formulario, vacío al registrar y precargado al editar</p>
+  <div class="form">
+    <div><span class="lbl">Nombre</span><div class="campo"></div></div>
+    <div><span class="lbl">Especie</span><div class="campo">Perro ▾</div></div>
+    <div><span class="lbl">Raza</span><div class="campo"></div></div>
+    <div><span class="lbl">Edad (meses)</span><div class="campo"></div></div>
+    <div><span class="lbl">Estado</span><div class="campo">Disponible ▾</div></div>
+    <div><span class="lbl">Refugio (solo admin)</span><div class="campo">Elegir ▾</div></div>
+    <div class="full"><span class="lbl">Foto</span><div class="zona">Arrastra una imagen o haz clic para seleccionarla</div></div>
+    <div class="full"><span class="lbl">Descripción</span><div class="campo alto"></div></div>
+    <div class="full"><span class="btn" onclick="ir('e-mascotas')">Guardar</span> <span class="btn o" onclick="ir('e-mascotas')">Cancelar</span></div>
+  </div>
+</section>
+
+<!-- ===== PRODUCTOS ===== -->
+<section id="v-e-productos" class="vista" data-nombre="Gestión de productos">
+  <div class="fila"><div><h2>Productos</h2><p class="sub" style="margin:0">Control de stock</p></div><span class="btn" onclick="ir('f-producto')">Nuevo producto</span></div>
+  <table><tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr>
+    <tr><td>Producto A</td><td>—</td><td>$ 00.00</td><td>12</td><td><span class="mini" onclick="ir('f-producto')">Editar</span><span class="mini">Agotar</span><span class="mini peligro" onclick="confirmar(this)">Eliminar</span></td></tr>
+    <tr><td>Producto B</td><td>—</td><td>$ 00.00</td><td>Agotado</td><td><span class="mini" onclick="ir('f-producto')">Editar</span><span class="mini peligro" onclick="confirmar(this)">Eliminar</span></td></tr></table>
+  <div class="alerta err" style="margin-top:14px">Mensaje: no se puede eliminar un producto que ya forma parte de pedidos.</div>
+</section>
+
+<section id="v-f-producto" class="vista" data-nombre="Formulario de producto">
+  <h2>Registrar / editar producto</h2><p class="sub">Formulario</p>
+  <div class="form">
+    <div><span class="lbl">Nombre</span><div class="campo"></div></div>
+    <div><span class="lbl">Categoría</span><div class="campo">Elegir ▾</div></div>
+    <div><span class="lbl">Precio</span><div class="campo"></div></div>
+    <div><span class="lbl">Stock</span><div class="campo"></div></div>
+    <div class="full"><span class="lbl">Foto</span><div class="zona">Arrastra una imagen o haz clic para seleccionarla</div></div>
+    <div class="full"><span class="lbl">Descripción</span><div class="campo alto"></div></div>
+    <div class="full"><span class="btn" onclick="ir('e-productos')">Guardar</span> <span class="btn o" onclick="ir('e-productos')">Cancelar</span></div>
+  </div>
+</section>
+
+<!-- ===== ENCARGADO ===== -->
+<section id="v-e-solicitudes" class="vista" data-nombre="Solicitudes de adopción">
+  <h2>Solicitudes de adopción</h2><p class="sub">Solo las de las mascotas de mi refugio</p>
+  <table><tr><th>Adoptante</th><th>Mascota</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr>
+    <tr><td>Adoptante A</td><td>Mascota A</td><td>dd/mm/aaaa</td><td><span class="etq">En revisión</span></td><td><span class="mini" onclick="ir('e-revisar')">Revisar</span></td></tr>
+    <tr><td>Adoptante B</td><td>Mascota B</td><td>dd/mm/aaaa</td><td><span class="etq">Aprobada</span></td><td>—</td></tr></table>
+</section>
+
+<section id="v-e-revisar" class="vista" data-nombre="Revisar solicitud">
+  <h2>Revisar solicitud</h2><p class="sub">Datos enviados por el adoptante</p>
+  <div class="caja">Contacto: ___ · Teléfono: ___ · Vivienda: ___<br><br>Motivo: texto escrito por el adoptante.</div>
+  <span class="btn" onclick="ir('e-solicitudes')">Aprobar</span> <span class="btn o" onclick="ir('e-solicitudes')">Rechazar</span>
+  <p class="nota" style="margin-top:14px">Al aprobar, la mascota pasa a "Adoptada".</p>
+</section>
+
+<section id="v-e-seguimientos" class="vista" data-nombre="Ver seguimientos">
+  <h2>Seguimientos post-adopción</h2><p class="sub">Reportes de los adoptantes de mi refugio</p>
+  <table><tr><th>Adoptante</th><th>Mascota</th><th>Salud</th><th>Observaciones</th></tr>
+    <tr><td>Adoptante B</td><td>Mascota B</td><td><span class="etq">Excelente</span></td><td>Texto</td></tr>
+    <tr><td>Adoptante C</td><td>Mascota D</td><td><span class="etq">Regular</span></td><td>Texto</td></tr></table>
+</section>
+
+<!-- ===== ADMINISTRADOR ===== -->
+<section id="v-a-dashboard" class="vista" data-nombre="Dashboard">
+  <div class="fila"><div><h2>Dashboard</h2><p class="sub" style="margin:0">Métricas del mes elegido</p></div><div><span class="campo" style="display:inline-block;width:140px">Mes ▾</span> <span class="btn">Descargar Excel</span></div></div>
+  <div class="kpis">
+    <div class="kpi"><small>Solicitudes del mes</small><b>00</b></div>
+    <div class="kpi"><small>Adopciones del mes</small><b>00</b></div>
+    <div class="kpi"><small>Pedidos del mes</small><b>00</b></div>
+    <div class="kpi"><small>Ventas del mes</small><b>$ 0</b></div>
+    <div class="kpi"><small>Ventas totales</small><b>$ 0</b></div>
+    <div class="kpi"><small>Usuarios registrados</small><b>00</b></div>
+  </div>
+</section>
+
+<section id="v-a-refugios" class="vista" data-nombre="Refugios">
+  <div class="fila"><div><h2>Refugios</h2><p class="sub" style="margin:0">Sedes del sistema</p></div><span class="btn" onclick="ir('f-refugio')">Nuevo refugio</span></div>
+  <table><tr><th>Nombre</th><th>Dirección</th><th>Teléfono</th><th>Acciones</th></tr>
+    <tr><td>Refugio A</td><td>—</td><td>—</td><td><span class="mini" onclick="ir('f-refugio')">Editar</span><span class="mini peligro" onclick="confirmar(this)">Eliminar</span></td></tr>
+    <tr><td>Refugio B</td><td>—</td><td>—</td><td><span class="mini" onclick="ir('f-refugio')">Editar</span><span class="mini peligro" onclick="confirmar(this)">Eliminar</span></td></tr></table>
+  <div class="alerta err" style="margin-top:14px">Mensaje: no se puede eliminar un refugio con mascotas o usuarios asignados.</div>
+</section>
+
+<section id="v-f-refugio" class="vista" data-nombre="Formulario de refugio">
+  <h2>Registrar / editar refugio</h2><p class="sub">Formulario</p>
+  <div class="form">
+    <div><span class="lbl">Nombre</span><div class="campo"></div></div>
+    <div><span class="lbl">Teléfono</span><div class="campo"></div></div>
+    <div class="full"><span class="lbl">Dirección</span><div class="campo"></div></div>
+    <div class="full"><span class="btn" onclick="ir('a-refugios')">Guardar</span> <span class="btn o" onclick="ir('a-refugios')">Cancelar</span></div>
+  </div>
+</section>
+
+<section id="v-a-encargados" class="vista" data-nombre="Encargados">
+  <div class="fila"><div><h2>Encargados</h2><p class="sub" style="margin:0">Cuentas asignadas a un refugio</p></div><span class="btn" onclick="ir('f-encargado')">Crear encargado</span></div>
+  <table><tr><th>Nombre</th><th>Correo</th><th>Refugio</th></tr>
+    <tr><td>Encargado A</td><td>correo@ejemplo.com</td><td>Refugio A</td></tr>
+    <tr><td>Encargado B</td><td>correo@ejemplo.com</td><td>Refugio B</td></tr></table>
+</section>
+
+<section id="v-f-encargado" class="vista" data-nombre="Crear encargado">
+  <h2>Crear encargado</h2><p class="sub">Formulario</p>
+  <div class="form">
+    <div><span class="lbl">Nombre completo</span><div class="campo"></div></div>
+    <div><span class="lbl">Correo</span><div class="campo"></div></div>
+    <div><span class="lbl">Contraseña</span><div class="campo"></div></div>
+    <div><span class="lbl">Refugio</span><div class="campo">Elegir ▾</div></div>
+    <div class="full"><span class="btn" onclick="ir('a-encargados')">Crear</span> <span class="btn o" onclick="ir('a-encargados')">Cancelar</span></div>
+  </div>
+</section>
+
+<section id="v-a-auditoria" class="vista" data-nombre="Auditoría">
+  <h2>Auditoría</h2><p class="sub">Registro de acciones sobre las tablas</p>
+  <table><tr><th>Usuario</th><th>Acción</th><th>Tabla</th><th>Fecha</th></tr>
+    <tr><td>usuario@ejemplo.com</td><td>UPDATE</td><td>solicitudes_adopcion</td><td>dd/mm/aaaa</td></tr>
+    <tr><td>usuario@ejemplo.com</td><td>INSERT</td><td>refugios</td><td>dd/mm/aaaa</td></tr>
+    <tr><td>usuario@ejemplo.com</td><td>DELETE</td><td>mascotas</td><td>dd/mm/aaaa</td></tr></table>
+</section>
+
+  </div>
+</div>
+
+<script>
+  // Menú de cada rol: [texto, pantalla]
+  const MENU = {
+    usuario:   [['Catálogo','catalogo'],['Tienda','tienda'],['Favoritos','favoritos'],['Carrito','carrito'],['Trámites','tramites'],['Mis seguimientos','misseg']],
+    encargado: [['Mascotas','e-mascotas'],['Productos','e-productos'],['Solicitudes','e-solicitudes'],['Ver seguimientos','e-seguimientos']],
+    admin:     [['Dashboard','a-dashboard'],['Mascotas','e-mascotas'],['Productos','e-productos'],['Refugios','a-refugios'],['Encargados','a-encargados'],['Auditoría','a-auditoria']]
+  };
+  const INICIO = { usuario:'catalogo', encargado:'e-mascotas', admin:'a-dashboard' };
+
+  function ir(id) {
+    document.querySelectorAll('.vista').forEach(v => v.classList.remove('activa'));
+    const v = document.getElementById('v-' + id);
+    if (v) { v.classList.add('activa'); document.getElementById('nombre-pantalla').textContent = v.dataset.nombre || id; }
+    window.scrollTo(0, 0);
+  }
+  function cambiarRol(rol) {
+    document.querySelectorAll('.sim button').forEach(b => b.classList.toggle('on', b.dataset.rol === rol));
+    document.getElementById('menu').innerHTML = MENU[rol].map(m => `<a onclick="ir('${m[1]}')">${m[0]}</a>`).join('');
+    document.getElementById('salir').style.display = 'inline';
+    ir(INICIO[rol]);
+  }
+  function salir() {
+    document.querySelectorAll('.sim button').forEach(b => b.classList.remove('on'));
+    document.getElementById('menu').innerHTML = '';
+    document.getElementById('salir').style.display = 'none';
+    ir('login');
+  }
+  // Confirmación de eliminar dentro de la misma fila
+  function confirmar(el) {
+    const td = el.parentNode, original = td.innerHTML;
+    td.innerHTML = '<b>¿Eliminar?</b> <span class="mini peligro">Sí</span><span class="mini">No</span>';
+    td.querySelector('.mini:last-child').onclick = () => { td.innerHTML = original; };
+  }
+</script>
+</body>
+</html>

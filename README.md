@@ -16,6 +16,8 @@ los encargados gestionan su refugio; el administrador supervisa todo el sistema.
 | **Encargado** | CRUD de mascotas y productos de su refugio, aprobar/rechazar solicitudes, registrar seguimientos |
 | **Administrador** | Dashboard con métricas y reporte Excel, gestión de refugios y encargados, auditoría, y borrado total de una mascota con historial |
 
+Mockups de las pantallas: [docs/mockups/mockups.html](docs/mockups/mockups.html) · Base de datos: [docs/base-de-datos.md](docs/base-de-datos.md)
+
 ## Requisitos
 - Python 3.12+ · Node 22+ · PostgreSQL 14+
 
