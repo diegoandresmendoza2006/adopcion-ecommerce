@@ -232,3 +232,85 @@ class MetricasOut(BaseModel):
     usuarios_nuevos_mes: int
     mascotas_disponibles: int
     mascotas_adoptadas: int
+
+
+
+
+# ----------------------------------------
+# PÁGINAS DE RESULTADOS (búsqueda + paginación)
+# ----------------------------------------
+class PaginaMascotas(BaseModel):
+    items: List[MascotaOut]
+    total: int
+    pagina: int
+    por_pagina: int
+    paginas: int
+
+
+class PaginaProductos(BaseModel):
+    items: List[ProductoOut]
+    total: int
+    pagina: int
+    por_pagina: int
+    paginas: int
+
+
+# ----------------------------------------------------------------------------
+# CRUD: editar (PUT = reemplazo completo, PATCH = cambios parciales)
+# ----------------------------------------------------------------------------
+from typing import Literal
+from pydantic import Field
+
+EstadoMascota = Literal["Disponible", "En Proceso", "Adoptada"]
+
+
+class MascotaPut(BaseModel):
+    nombre: str = Field(min_length=1, max_length=100)
+    especie: str = Field(min_length=1, max_length=50)
+    raza: Optional[str] = Field(None, max_length=50)
+    edad_meses: Optional[int] = Field(None, ge=0, le=600)
+    descripcion: Optional[str] = None
+    estado_adopcion: EstadoMascota = "Disponible"
+    refugio_id: Optional[int] = None      # solo lo respeta el administrador
+    imagen_url: Optional[str] = None
+
+
+class MascotaUpdate(BaseModel):
+    nombre: Optional[str] = Field(None, min_length=1, max_length=100)
+    especie: Optional[str] = Field(None, min_length=1, max_length=50)
+    raza: Optional[str] = Field(None, max_length=50)
+    edad_meses: Optional[int] = Field(None, ge=0, le=600)
+    descripcion: Optional[str] = None
+    estado_adopcion: Optional[EstadoMascota] = None
+    refugio_id: Optional[int] = None
+    imagen_url: Optional[str] = None
+
+
+class ProductoPut(BaseModel):
+    nombre: str = Field(min_length=1, max_length=100)
+    descripcion: Optional[str] = None
+    precio: float = Field(ge=0)
+    stock: int = Field(ge=0)
+    categoria_id: int
+    imagen_url: Optional[str] = None
+
+
+class ProductoUpdate(BaseModel):
+    nombre: Optional[str] = Field(None, min_length=1, max_length=100)
+    descripcion: Optional[str] = None
+    precio: Optional[float] = Field(None, ge=0)
+    stock: Optional[int] = Field(None, ge=0)
+    categoria_id: Optional[int] = None
+    imagen_url: Optional[str] = None
+
+
+class RefugioPut(BaseModel):
+    nombre: str = Field(min_length=1, max_length=100)
+    direccion: Optional[str] = Field(None, max_length=255)
+    telefono: Optional[str] = Field(None, max_length=20)
+
+
+class RefugioUpdate(BaseModel):
+    nombre: Optional[str] = Field(None, min_length=1, max_length=100)
+    direccion: Optional[str] = Field(None, max_length=255)
+    telefono: Optional[str] = Field(None, max_length=20)
