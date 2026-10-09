@@ -1,21 +1,23 @@
 import { Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpParams } from '@angular/common/http';
+import { NgIcon } from '@ng-icons/core';
 import { Subscription } from 'rxjs';
 import { ApiService } from '../../services/api.service';
 import { CarritoService } from '../../services/carrito.service';
 import { PaginacionComponent } from '../paginacion/paginacion.component';
+import { Categoria, Pagina, Producto } from '../../models/modelos';
 
 @Component({
   selector: 'app-tienda',
   standalone: true,
-  imports: [CommonModule, PaginacionComponent],
+  imports: [CommonModule, NgIcon, PaginacionComponent],
   templateUrl: './tienda.component.html',
   styleUrls: ['./tienda.component.css']
 })
 export class TiendaComponent implements OnInit, OnDestroy {
-  productos = signal<any[]>([]);
-  categorias = signal<any[]>([]);
+  productos = signal<Producto[]>([]);
+  categorias = signal<Categoria[]>([]);
   total = signal(0);
   paginas = signal(1);
   cargando = signal(true);
@@ -34,13 +36,13 @@ export class TiendaComponent implements OnInit, OnDestroy {
 
   hayFiltros = computed(() => !!(this.texto().trim() || this.categoriaId() || this.precioMin() || this.precioMax() || this.soloConStock()));
 
-  private temporizador: any;
+  private temporizador?: ReturnType<typeof setTimeout>;
   private peticion?: Subscription;
 
   constructor(private api: ApiService, public carrito: CarritoService) {}
 
   ngOnInit(): void {
-    this.api.get<any[]>('/productos/categorias').subscribe({
+    this.api.get<Categoria[]>('/productos/categorias').subscribe({
       next: (c) => this.categorias.set(c),
       error: () => {}   // si falla, simplemente no se ofrece el filtro de categoría
     });
@@ -106,7 +108,7 @@ export class TiendaComponent implements OnInit, OnDestroy {
     this.peticion?.unsubscribe();               // si había una búsqueda anterior en curso, se descarta
     this.cargando.set(true);
     this.error.set('');
-    this.peticion = this.api.get<any>(`/productos/buscar?${params.toString()}`).subscribe({
+    this.peticion = this.api.get<Pagina<Producto>>(`/productos/buscar?${params.toString()}`).subscribe({
       next: (r) => {
         this.productos.set(r.items);
         this.total.set(r.total);
@@ -121,12 +123,12 @@ export class TiendaComponent implements OnInit, OnDestroy {
     });
   }
 
-  agregarCarrito(producto: any) {
+  agregarCarrito(producto: Producto) {
     const problema = this.carrito.agregar(producto);
     this.aviso.set(problema ?? `¡Añadido al carrito: ${producto.nombre}!`);
   }
 
-  agregarFavoritos(producto: any) {
+  agregarFavoritos(producto: Producto) {
     this.carrito.alternarFavorito(producto);
   }
 }

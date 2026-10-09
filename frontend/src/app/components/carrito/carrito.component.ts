@@ -1,13 +1,15 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { NgIcon } from '@ng-icons/core';
 import { ApiService } from '../../services/api.service';
 import { CarritoService } from '../../services/carrito.service';
+import { CompraNueva, Orden } from '../../models/modelos';
 
 @Component({
   selector: 'app-carrito',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, NgIcon],
   templateUrl: './carrito.component.html',
   styleUrls: ['./carrito.component.css']
 })
@@ -26,8 +28,8 @@ export class CarritoComponent {
     this.ok.set('');
     this.pagando.set(true);
 
-    const cuerpo = { items: items.map(i => ({ producto_id: i.producto_id, cantidad: i.cantidad })) };
-    this.api.post('/compras/', cuerpo).subscribe({
+    const cuerpo: CompraNueva = { items: items.map(i => ({ producto_id: i.producto_id, cantidad: i.cantidad })) };
+    this.api.post<Orden>('/compras/', cuerpo).subscribe({
       next: (orden) => {
         this.carrito.vaciar();
         this.pagando.set(false);

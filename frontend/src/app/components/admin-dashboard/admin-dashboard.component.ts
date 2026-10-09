@@ -1,19 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
-
-interface Metricas {
-  mes: string;
-  solicitudes_mes: number;
-  adopciones_mes: number;
-  pedidos_mes: number;
-  ventas_mes: number;
-  ventas_totales: number;
-  usuarios_registrados: number;
-  usuarios_nuevos_mes: number;
-  mascotas_disponibles: number;
-  mascotas_adoptadas: number;
-}
+import { Metricas } from '../../models/modelos';
 
 const NOMBRES_MES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 

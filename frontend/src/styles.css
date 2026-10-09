@@ -38,3 +38,21 @@ body { margin: 0; font-family: Arial, sans-serif; }
 .acciones-fila { white-space: nowrap; }
 .confirmar { color: #b42318; font-weight: bold; font-size: 12px; margin-right: 4px; }
 .select-estado { padding: 4px; border: 1px solid #ccc; border-radius: 4px; }
+
+/* ---- Iconos (librería ng-icons / Lucide): se alinean con el texto ---- */
+ng-icon { vertical-align: -0.15em; }
+.logo { color: #28a745; line-height: 1; }
+.nav-link, .btn-sm, .con-icono { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ---- Campos obligatorios: asterisco rojo en la etiqueta ---- */
+label.req::after { content: " *"; color: #c0392b; font-weight: bold; }
+.asterisco { color: #c0392b; font-weight: bold; }
+.leyenda { font-size: 12px; color: #666; margin: 10px 0 0; text-align: left; }
+
+/* ---- Fila recién editada (sube al primer lugar y se resalta un momento) ---- */
+.fila-editada td { animation: resaltar 3s ease-out; }
+@keyframes resaltar { from { background: #fff3bf; } to { background: transparent; } }
+
+/* ---- Cajas de imagen (cuando no hay foto se muestra un icono gris) ---- */
+.sin-foto, .imagen-grande, .imagen-producto, .imagen-fav, .img-mini { color: #9aa5b1; }
+.sello { display: inline-flex; align-items: center; gap: 4px; }

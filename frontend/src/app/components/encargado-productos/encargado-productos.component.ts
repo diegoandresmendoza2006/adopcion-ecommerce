@@ -1,19 +1,22 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { NgIcon } from '@ng-icons/core';
 import { ApiService } from '../../services/api.service';
+import { editadoPrimero, irAlFormulario } from '../../services/ui';
+import { Categoria, Producto, ProductoForm } from '../../models/modelos';
 import { SubirFotoComponent } from '../subir-foto/subir-foto.component';
 
 @Component({
   selector: 'app-encargado-productos',
   standalone: true,
-  imports: [CommonModule, FormsModule, SubirFotoComponent],
+  imports: [CommonModule, FormsModule, NgIcon, SubirFotoComponent],
   templateUrl: './encargado-productos.component.html',
   styleUrls: ['./encargado-productos.component.css']
 })
 export class EncargadoProductosComponent implements OnInit {
-  productos = signal<any[]>([]);
-  categorias = signal<any[]>([]);
+  productos = signal<Producto[]>([]);
+  categorias = signal<Categoria[]>([]);
   mostrarForm = signal(false);
   enviando = signal(false);
   error = signal('');
@@ -27,23 +30,25 @@ export class EncargadoProductosComponent implements OnInit {
   editandoId = signal<number | null>(null);
   // id del producto que está pidiendo confirmación para eliminarse
   confirmandoId = signal<number | null>(null);
+  // último producto editado: aparece de primero en la lista
+  ultimoEditadoId = signal<number | null>(null);
 
-  nuevo: any = this.vacio();
+  nuevo: ProductoForm = this.vacio();
 
   constructor(private api: ApiService) {}
 
-  private vacio() {
+  private vacio(): ProductoForm {
     return { nombre: '', descripcion: '', precio: 0, stock: 0, categoria_id: null };
   }
 
   ngOnInit(): void {
     this.cargar();
-    this.api.get<any[]>('/productos/categorias').subscribe(c => this.categorias.set(c));
+    this.api.get<Categoria[]>('/productos/categorias').subscribe(c => this.categorias.set(c));
   }
 
   cargar(): void {
-    this.api.get<any[]>('/productos/').subscribe({
-      next: (data) => this.productos.set(data),
+    this.api.get<Producto[]>('/productos/').subscribe({
+      next: (data) => this.productos.set(editadoPrimero(data, this.ultimoEditadoId())),
       error: (err) => this.error.set(this.api.mensajeError(err))
     });
   }
@@ -61,6 +66,7 @@ export class EncargadoProductosComponent implements OnInit {
       this.fotoUrl.set('');
       this.editandoId.set(null);
       this.mostrarForm.set(true);
+      irAlFormulario('campo-nombre');
     }
     this.ok.set('');
     this.error.set('');
@@ -74,7 +80,7 @@ export class EncargadoProductosComponent implements OnInit {
   }
 
   // ---------- EDITAR ----------
-  editar(p: any) {
+  editar(p: Producto) {
     this.nuevo = {
       nombre: p.nombre,
       descripcion: p.descripcion ?? '',
@@ -88,7 +94,7 @@ export class EncargadoProductosComponent implements OnInit {
     this.mostrarForm.set(true);
     this.ok.set('');
     this.error.set('');
-    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+    irAlFormulario('campo-nombre');
   }
 
   guardar() {
@@ -103,13 +109,14 @@ export class EncargadoProductosComponent implements OnInit {
     };
     const id = this.editandoId();
     const peticion = id === null
-      ? this.api.post('/productos/', cuerpo)
-      : this.api.put(`/productos/${id}`, cuerpo);
+      ? this.api.post<Producto>('/productos/', cuerpo)
+      : this.api.put<Producto>(`/productos/${id}`, cuerpo);
 
     peticion.subscribe({
-      next: () => {
+      next: (guardado) => {
         this.enviando.set(false);
         this.ok.set(id === null ? 'Producto creado.' : 'Producto actualizado.');
+        this.ultimoEditadoId.set(guardado.id);   // el producto guardado sube al primer lugar
         this.cerrarForm();
         this.cargar();
       },
@@ -121,17 +128,17 @@ export class EncargadoProductosComponent implements OnInit {
   }
 
   // ---------- Cambio rápido de stock (PATCH) ----------
-  agotar(p: any) {
+  agotar(p: Producto) {
     this.error.set('');
     this.ok.set('');
     this.api.patch(`/productos/${p.id}`, { stock: 0 }).subscribe({
-      next: () => { this.ok.set(`"${p.nombre}" quedó agotado.`); this.cargar(); },
+      next: () => { this.ok.set(`"${p.nombre}" quedó agotado.`); this.ultimoEditadoId.set(p.id); this.cargar(); },
       error: (err) => this.error.set(this.api.mensajeError(err))
     });
   }
 
   // ---------- ELIMINAR (con confirmación en la misma fila) ----------
-  pedirEliminar(p: any) {
+  pedirEliminar(p: Producto) {
     this.confirmandoId.set(p.id);
     this.ok.set('');
     this.error.set('');
@@ -141,7 +148,7 @@ export class EncargadoProductosComponent implements OnInit {
     this.confirmandoId.set(null);
   }
 
-  eliminar(p: any) {
+  eliminar(p: Producto) {
     this.api.delete(`/productos/${p.id}`).subscribe({
       next: () => {
         this.confirmandoId.set(null);

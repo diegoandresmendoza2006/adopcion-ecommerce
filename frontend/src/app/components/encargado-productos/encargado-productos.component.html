@@ -4,7 +4,9 @@
       <h2>Gestión de Productos (Tienda)</h2>
       <p>Control de stock y artículos solidarios</p>
     </div>
-    <button class="btn-primary" (click)="subirProducto()">{{ mostrarForm() ? 'Cancelar' : '+ Subir Producto' }}</button>
+    <button class="btn-primary con-icono" (click)="subirProducto()">
+      @if (mostrarForm()) { <ng-icon name="lucideX" size="16" /> Cancelar } @else { <ng-icon name="lucidePlus" size="16" /> Subir Producto }
+    </button>
   </div>
 
   @if (ok()) { <p class="msg-ok">{{ ok() }}</p> }
@@ -14,24 +16,25 @@
     @if (categorias().length === 0) {
       <p class="msg-error">No hay categorías en la base de datos (tabla categorias_productos). Crea al menos una para poder subir productos.</p>
     }
-    <form class="form-panel" (ngSubmit)="guardar()">
+    <form #f="ngForm" class="form-panel" (ngSubmit)="guardar()">
       <h3 class="full">{{ editandoId() === null ? 'Nuevo producto' : 'Editando producto #' + editandoId() }}</h3>
-      <div><label>Nombre</label><input [(ngModel)]="nuevo.nombre" name="nombre" required></div>
-      <div><label>Categoría</label>
-        <select [(ngModel)]="nuevo.categoria_id" name="categoria_id" required>
+      <p class="leyenda full">Los campos con <span class="asterisco">*</span> son obligatorios</p>
+      <div><label for="campo-nombre" class="req">Nombre</label><input id="campo-nombre" [(ngModel)]="nuevo.nombre" name="nombre" required></div>
+      <div><label for="campo-categoria" class="req">Categoría</label>
+        <select id="campo-categoria" [(ngModel)]="nuevo.categoria_id" name="categoria_id" required>
           <option [ngValue]="null">-- Elige --</option>
           @for (c of categorias(); track c.id) { <option [ngValue]="c.id">{{ c.nombre }}</option> }
         </select>
       </div>
-      <div><label>Precio</label><input type="number" min="0" step="0.01" [(ngModel)]="nuevo.precio" name="precio" required></div>
-      <div><label>Stock</label><input type="number" min="0" [(ngModel)]="nuevo.stock" name="stock" required></div>
+      <div><label for="campo-precio" class="req">Precio</label><input id="campo-precio" type="number" min="0" step="0.01" [(ngModel)]="nuevo.precio" name="precio" required></div>
+      <div><label for="campo-stock" class="req">Stock</label><input id="campo-stock" type="number" min="0" [(ngModel)]="nuevo.stock" name="stock" required></div>
       <div class="full">
         <label>Foto (opcional)</label>
         <app-subir-foto [(url)]="fotoUrl" (subiendoChange)="subiendoFoto.set($event)"></app-subir-foto>
       </div>
-      <div class="full"><label>Descripción</label><textarea rows="2" [(ngModel)]="nuevo.descripcion" name="descripcion"></textarea></div>
+      <div class="full"><label for="campo-descripcion">Descripción</label><textarea id="campo-descripcion" rows="2" [(ngModel)]="nuevo.descripcion" name="descripcion"></textarea></div>
       <div class="full">
-        <button type="submit" [disabled]="enviando() || subiendoFoto()">
+        <button type="submit" [disabled]="enviando() || subiendoFoto() || f.invalid">
           {{ subiendoFoto() ? 'Subiendo foto...' : enviando() ? 'Guardando...' : (editandoId() === null ? 'Guardar producto' : 'Guardar cambios') }}
         </button>
       </div>
@@ -51,7 +54,7 @@
       </thead>
       <tbody>
         @for (p of productos(); track p.id) {
-          <tr>
+          <tr [class.fila-editada]="p.id === ultimoEditadoId()">
             <td class="font-bold">{{ p.nombre }}</td>
             <td>{{ nombreCategoria(p.categoria_id) }}</td>
             <td>${{ p.precio | number:'1.2-2' }}</td>
@@ -62,9 +65,9 @@
                 <button type="button" class="btn-sm btn-eliminar" (click)="eliminar(p)">Sí, eliminar</button>
                 <button type="button" class="btn-sm" (click)="cancelarEliminar()">No</button>
               } @else {
-                <button type="button" class="btn-sm btn-editar" (click)="editar(p)">✏️ Editar</button>
+                <button type="button" class="btn-sm btn-editar" (click)="editar(p)"><ng-icon name="lucidePencil" size="14" /> Editar</button>
                 @if (p.stock > 0) { <button type="button" class="btn-sm" (click)="agotar(p)">Agotar</button> }
-                <button type="button" class="btn-sm btn-eliminar" (click)="pedirEliminar(p)">🗑️ Eliminar</button>
+                <button type="button" class="btn-sm btn-eliminar" (click)="pedirEliminar(p)"><ng-icon name="lucideTrash2" size="14" /> Eliminar</button>
               }
             </td>
           </tr>

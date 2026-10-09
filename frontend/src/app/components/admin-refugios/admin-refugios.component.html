@@ -4,20 +4,23 @@
       <h2>Refugios</h2>
       <p>Crea, edita o elimina las sedes del sistema</p>
     </div>
-    <button class="btn-sm btn-editar" (click)="nuevo()">{{ mostrarForm() ? 'Cancelar' : '+ Nuevo refugio' }}</button>
+    <button class="btn-sm btn-editar" (click)="nuevo()">
+      @if (mostrarForm()) { <ng-icon name="lucideX" size="14" /> Cancelar } @else { <ng-icon name="lucidePlus" size="14" /> Nuevo refugio }
+    </button>
   </div>
 
   @if (ok()) { <p class="msg-ok">{{ ok() }}</p> }
   @if (error()) { <p class="msg-error">{{ error() }}</p> }
 
   @if (mostrarForm()) {
-    <form class="form-panel" (ngSubmit)="guardar()">
+    <form #f="ngForm" class="form-panel" (ngSubmit)="guardar()">
       <h3 class="full">{{ editandoId() === null ? 'Nuevo refugio' : 'Editando refugio #' + editandoId() }}</h3>
-      <div><label>Nombre</label><input [(ngModel)]="form.nombre" name="nombre" required maxlength="100"></div>
-      <div><label>Teléfono</label><input [(ngModel)]="form.telefono" name="telefono" maxlength="20"></div>
-      <div class="full"><label>Dirección</label><input [(ngModel)]="form.direccion" name="direccion" maxlength="255"></div>
+      <p class="leyenda full">Los campos con <span class="asterisco">*</span> son obligatorios</p>
+      <div><label for="campo-nombre" class="req">Nombre</label><input id="campo-nombre" [(ngModel)]="form.nombre" name="nombre" required maxlength="100"></div>
+      <div><label for="campo-telefono">Teléfono</label><input id="campo-telefono" [(ngModel)]="form.telefono" name="telefono" maxlength="20"></div>
+      <div class="full"><label for="campo-direccion">Dirección</label><input id="campo-direccion" [(ngModel)]="form.direccion" name="direccion" maxlength="255"></div>
       <div class="full">
-        <button type="submit" [disabled]="enviando()">
+        <button type="submit" [disabled]="enviando() || f.invalid">
           {{ enviando() ? 'Guardando...' : (editandoId() === null ? 'Crear refugio' : 'Guardar cambios') }}
         </button>
       </div>
@@ -32,7 +35,7 @@
     </thead>
     <tbody>
       @for (r of refugios(); track r.id) {
-        <tr style="border-bottom: 1px solid #eee;">
+        <tr style="border-bottom: 1px solid #eee;" [class.fila-editada]="r.id === ultimoEditadoId()">
           <td class="font-bold">{{ r.nombre }}</td>
           <td>{{ r.direccion }}</td>
           <td>{{ r.telefono }}</td>
@@ -42,8 +45,8 @@
               <button type="button" class="btn-sm btn-eliminar" (click)="eliminar(r)">Sí, eliminar</button>
               <button type="button" class="btn-sm" (click)="cancelarEliminar()">No</button>
             } @else {
-              <button type="button" class="btn-sm btn-editar" (click)="editar(r)">✏️ Editar</button>
-              <button type="button" class="btn-sm btn-eliminar" (click)="pedirEliminar(r)">🗑️ Eliminar</button>
+              <button type="button" class="btn-sm btn-editar" (click)="editar(r)"><ng-icon name="lucidePencil" size="14" /> Editar</button>
+              <button type="button" class="btn-sm btn-eliminar" (click)="pedirEliminar(r)"><ng-icon name="lucideTrash2" size="14" /> Eliminar</button>
             }
           </td>
         </tr>

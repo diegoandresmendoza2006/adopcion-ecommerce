@@ -4,45 +4,66 @@
       <h2>Inventario de Mascotas (Sede Asignada)</h2>
       <p>Gestión, edición y registro de animales en el refugio</p>
     </div>
-    <button class="btn-primary" (click)="registrarMascota()">{{ mostrarForm() ? 'Cancelar' : '+ Registrar Mascota' }}</button>
+    <button class="btn-primary con-icono" (click)="registrarMascota()">
+      @if (mostrarForm()) { <ng-icon name="lucideX" size="16" /> Cancelar } @else { <ng-icon name="lucidePlus" size="16" /> Registrar Mascota }
+    </button>
   </div>
 
   @if (ok()) { <p class="msg-ok">{{ ok() }}</p> }
   @if (error()) { <p class="msg-error">{{ error() }}</p> }
 
   @if (mostrarForm()) {
-    <form class="form-panel" (ngSubmit)="guardar()">
+    <form #f="ngForm" class="form-panel" (ngSubmit)="guardar()">
       <h3 class="full">{{ editandoId() === null ? 'Nueva mascota' : 'Editando mascota #' + editandoId() }}</h3>
-      <div><label>Nombre</label><input [(ngModel)]="nueva.nombre" name="nombre" required></div>
-      <div><label>Especie</label>
-        <select [(ngModel)]="nueva.especie" name="especie">
+      <p class="leyenda full">Los campos con <span class="asterisco">*</span> son obligatorios</p>
+      <div><label for="campo-nombre" class="req">Nombre</label><input id="campo-nombre" [(ngModel)]="nueva.nombre" name="nombre" required></div>
+      <div><label for="campo-especie" class="req">Especie</label>
+        <select id="campo-especie" [(ngModel)]="nueva.especie" name="especie" required>
           <option>Perro</option><option>Gato</option><option>Otro</option>
         </select>
       </div>
-      <div><label>Raza</label><input [(ngModel)]="nueva.raza" name="raza"></div>
-      <div><label>Edad (en meses)</label><input type="number" min="0" [(ngModel)]="nueva.edad_meses" name="edad_meses" required></div>
+      <div><label for="campo-raza">Raza</label><input id="campo-raza" [(ngModel)]="nueva.raza" name="raza"></div>
+      <div><label for="campo-edad" class="req">Edad (en meses)</label><input id="campo-edad" type="number" min="0" max="240" [(ngModel)]="nueva.edad_meses" name="edad_meses" required></div>
       @if (editandoId() !== null) {
-        <div><label>Estado</label>
-          <select [(ngModel)]="nueva.estado_adopcion" name="estado_adopcion">
+        <div><label for="campo-estado" class="req">Estado</label>
+          <select id="campo-estado" [(ngModel)]="nueva.estado_adopcion" name="estado_adopcion" required>
             @for (e of estados; track e) { <option [value]="e">{{ e }}</option> }
           </select>
         </div>
       }
       @if (esAdmin) {
-        <div><label>Refugio</label>
-          <select [(ngModel)]="nueva.refugio_id" name="refugio_id" required>
+        <div><label for="campo-refugio" class="req">Refugio</label>
+          <select id="campo-refugio" [(ngModel)]="nueva.refugio_id" name="refugio_id" required>
             <option [ngValue]="null">-- Elige --</option>
             @for (r of refugios(); track r.id) { <option [ngValue]="r.id">{{ r.nombre }}</option> }
           </select>
         </div>
       }
+
+      <!-- Quién adoptó / quiénes aspiran a esta mascota -->
+      @if (editandoId() !== null && solicitantesEdicion().length > 0) {
+        <div class="full info-solicitantes">
+          @if (adoptante(solicitantesEdicion()); as a) {
+            <p><strong>Adoptada por:</strong> {{ a.adoptante_nombre }}@if (a.telefono) { · Tel. {{ a.telefono }} }</p>
+          }
+          @if (aspirantes(solicitantesEdicion()).length > 0) {
+            <p><strong>Aspirantes en revisión ({{ aspirantes(solicitantesEdicion()).length }}):</strong></p>
+            <ul>
+              @for (s of aspirantes(solicitantesEdicion()); track s.solicitud_id) {
+                <li>{{ s.adoptante_nombre }}@if (s.telefono) { · Tel. {{ s.telefono }} } · solicitó el {{ s.fecha_solicitud | date:'dd/MM/yyyy' }}</li>
+              }
+            </ul>
+          }
+        </div>
+      }
+
       <div class="full">
         <label>Foto (opcional)</label>
         <app-subir-foto [(url)]="fotoUrl" (subiendoChange)="subiendoFoto.set($event)"></app-subir-foto>
       </div>
-      <div class="full"><label>Descripción</label><textarea rows="2" [(ngModel)]="nueva.descripcion" name="descripcion"></textarea></div>
+      <div class="full"><label for="campo-descripcion">Descripción</label><textarea id="campo-descripcion" rows="2" [(ngModel)]="nueva.descripcion" name="descripcion"></textarea></div>
       <div class="full">
-        <button type="submit" [disabled]="enviando() || subiendoFoto()">
+        <button type="submit" [disabled]="enviando() || subiendoFoto() || f.invalid">
           {{ subiendoFoto() ? 'Subiendo foto...' : enviando() ? 'Guardando...' : (editandoId() === null ? 'Guardar mascota' : 'Guardar cambios') }}
         </button>
       </div>
@@ -63,17 +84,17 @@
       </thead>
       <tbody>
         @for (m of mascotas(); track m.id) {
-          <tr>
+          <tr [class.fila-editada]="m.id === ultimaEditadaId()">
             <td class="font-bold">{{ m.nombre }}</td>
             <td>{{ m.especie }}</td>
             <td>{{ m.raza }}</td>
             <td>{{ edadTexto(m) }}</td>
             <td>
-              <select class="select-estado" [value]="m.estado_adopcion" (change)="cambiarEstado(m, $any($event.target).value)" aria-label="Cambiar estado">
+              <select #sel class="select-estado" [value]="m.estado_adopcion" (change)="pedirCambioEstado(m, sel.value, sel)" aria-label="Cambiar estado">
                 @for (e of estados; track e) { <option [value]="e" [selected]="e === m.estado_adopcion">{{ e }}</option> }
               </select>
             </td>
-                        <td class="acciones-fila">
+            <td class="acciones-fila">
               @if (forzarId() === m.id) {
                 <span class="confirmar">Se borrará también su historial de solicitudes. ¿Seguro?</span>
                 <button type="button" class="btn-sm btn-eliminar" (click)="eliminarForzado(m)">Eliminar todo</button>
@@ -83,11 +104,57 @@
                 <button type="button" class="btn-sm btn-eliminar" (click)="eliminar(m)">Sí, eliminar</button>
                 <button type="button" class="btn-sm" (click)="cancelarEliminar()">No</button>
               } @else {
-                <button type="button" class="btn-sm btn-editar" (click)="editar(m)">✏️ Editar</button>
-                <button type="button" class="btn-sm btn-eliminar" (click)="pedirEliminar(m)">🗑️ Eliminar</button>
+                <button type="button" class="btn-sm btn-editar" (click)="editar(m)"><ng-icon name="lucidePencil" size="14" /> Editar</button>
+                <button type="button" class="btn-sm btn-eliminar" (click)="pedirEliminar(m)"><ng-icon name="lucideTrash2" size="14" /> Eliminar</button>
               }
             </td>
           </tr>
+
+          <!-- Aviso al cambiar el estado de una mascota adoptada o en proceso -->
+          @if (cambioPendiente(); as c) {
+            @if (c.mascota.id === m.id) {
+              <tr class="fila-cambio">
+                <td colspan="6">
+                  <p class="titulo-cambio">
+                    Cambiar a {{ m.nombre }} de "{{ m.estado_adopcion }}" a "{{ c.nuevoEstado }}"
+                  </p>
+
+                  @if (cargandoSolicitantes()) {
+                    <p class="msg-vacio">Buscando solicitudes...</p>
+                  } @else {
+                    @if (m.estado_adopcion === 'Adoptada') {
+                      @if (adoptante(solicitantes()); as a) {
+                        <p><strong>Fue adoptada por:</strong> {{ a.adoptante_nombre }}@if (a.telefono) { · Tel. {{ a.telefono }} }</p>
+                      } @else {
+                        <p>Está marcada como adoptada, pero no hay ninguna solicitud aprobada registrada.</p>
+                      }
+                    }
+                    @if (aspirantes(solicitantes()).length > 0) {
+                      <p><strong>Aspirantes en revisión ({{ aspirantes(solicitantes()).length }}):</strong></p>
+                      <ul>
+                        @for (s of aspirantes(solicitantes()); track s.solicitud_id) {
+                          <li>{{ s.adoptante_nombre }}@if (s.telefono) { · Tel. {{ s.telefono }} } · solicitó el {{ s.fecha_solicitud | date:'dd/MM/yyyy' }}</li>
+                        }
+                      </ul>
+                    } @else if (m.estado_adopcion === 'En Proceso') {
+                      <p>No hay solicitudes en revisión para esta mascota.</p>
+                    }
+
+                    @if (bloqueado()) {
+                      <p class="msg-error">Esta mascota ya tiene una adopción aprobada: no se puede volver a ponerla en "{{ c.nuevoEstado }}".</p>
+                    }
+                  }
+
+                  <div class="botones-cambio">
+                    <button type="button" class="btn-sm btn-editar" [disabled]="cargandoSolicitantes() || bloqueado()" (click)="confirmarCambio()">
+                      <ng-icon name="lucideCheck" size="14" /> Confirmar cambio
+                    </button>
+                    <button type="button" class="btn-sm" (click)="cancelarCambio()">Cancelar</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
         }
       </tbody>
     </table>

@@ -7,7 +7,7 @@
   <div class="grid-favoritos">
     @for (item of carrito.favoritos(); track item.producto_id) {
       <div class="card-fav">
-        <div class="imagen-fav">📦</div>
+        <div class="imagen-fav"><ng-icon name="lucidePackage" size="44" /></div>
         <h3>{{ item.nombre }}</h3>
         <p class="precio">${{ item.precio | number:'1.2-2' }}</p>
         <button class="btn-mover" (click)="moverAlCarrito(item)">Mover al Carrito</button>

@@ -1,5 +1,6 @@
 import { Component, model, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgIcon } from '@ng-icons/core';
 import { ImagenService } from '../../services/imagen.service';
 
 // Zona para ARRASTRAR una foto o hacer clic para SELECCIONARLA.
@@ -7,7 +8,7 @@ import { ImagenService } from '../../services/imagen.service';
 @Component({
   selector: 'app-subir-foto',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NgIcon],
   template: `
     @if (url()) {
       <div class="vista">
@@ -23,10 +24,10 @@ import { ImagenService } from '../../services/imagen.service';
            (click)="entrada.click()" (keydown.enter)="entrada.click()"
            (dragover)="alArrastrar($event)" (dragleave)="alSalir($event)" (drop)="alSoltar($event)">
         @if (subiendo()) {
-          <div class="icono">⏳</div>
+          <div class="icono"><ng-icon name="lucideClock" size="34" /></div>
           <p><strong>Subiendo foto...</strong></p>
         } @else {
-          <div class="icono">📷</div>
+          <div class="icono"><ng-icon name="lucideCamera" size="34" /></div>
           <p><strong>Arrastra una foto aquí</strong></p>
           <p class="sub">o haz clic para seleccionarla</p>
           <p class="sub">JPG, PNG o WEBP · máximo 5 MB</p>
@@ -45,7 +46,7 @@ import { ImagenService } from '../../services/imagen.service';
     </p>
     @if (verUrl()) {
       <input class="campo-url" type="text" placeholder="https://..." [value]="url()"
-             (input)="url.set($any($event.target).value)">
+             (input)="alEscribirUrl($event)">
     }
   `,
   styles: [`
@@ -55,11 +56,11 @@ import { ImagenService } from '../../services/imagen.service';
     .zona:hover, .zona:focus { border-color: #28a745; background: #f1faf3; outline: none; }
     .zona.activa { border-color: #28a745; background: #e3f6e8; transform: scale(1.01); }
     .zona.ocupada { cursor: progress; opacity: .8; }
-    .icono { font-size: 34px; }
+    .icono { color: #6b7280; line-height: 1; }
     .zona p { margin: 4px 0; }
     .sub { color: #666; font-size: 12px; }
     .vista { display: flex; align-items: center; gap: 14px; }
-    .vista img { max-height: 140px; max-width: 200px; border-radius: 8px; object-fit: contain; background: #f4f6f8; border: 1px solid #ddd; }
+    .vista img { max-height: 120px; max-width: 180px; border-radius: 8px; object-fit: cover; border: 1px solid #ddd; }
     .acciones { display: flex; flex-direction: column; gap: 6px; }
     .acciones button { padding: 6px 12px; border-radius: 4px; border: 1px solid #28a745; background: #fff; color: #28a745; cursor: pointer; }
     .acciones .quitar { border-color: #b42318; color: #b42318; }
@@ -100,6 +101,10 @@ export class SubirFotoComponent {
     const archivo = input.files?.[0];
     if (archivo) this.procesar(archivo);
     input.value = ''; // permite volver a elegir el mismo archivo
+  }
+
+  alEscribirUrl(e: Event) {
+    this.url.set((e.target as HTMLInputElement).value);
   }
 
   quitar() {

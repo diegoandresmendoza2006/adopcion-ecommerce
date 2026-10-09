@@ -1,28 +1,33 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { NgIcon } from '@ng-icons/core';
 import { ApiService } from '../../services/api.service';
+import { editadoPrimero, irAlFormulario } from '../../services/ui';
+import { Refugio, RefugioForm } from '../../models/modelos';
 
 @Component({
   selector: 'app-admin-refugios',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NgIcon],
   templateUrl: './admin-refugios.component.html'
 })
 export class AdminRefugiosComponent implements OnInit {
-  refugios = signal<any[]>([]);
+  refugios = signal<Refugio[]>([]);
   mostrarForm = signal(false);
   enviando = signal(false);
   error = signal('');
   ok = signal('');
   editandoId = signal<number | null>(null);
   confirmandoId = signal<number | null>(null);
+  // último refugio editado: aparece de primero en la lista
+  ultimoEditadoId = signal<number | null>(null);
 
-  form: any = this.vacio();
+  form: RefugioForm = this.vacio();
 
   constructor(private api: ApiService) {}
 
-  private vacio() {
+  private vacio(): RefugioForm {
     return { nombre: '', direccion: '', telefono: '' };
   }
 
@@ -31,8 +36,8 @@ export class AdminRefugiosComponent implements OnInit {
   }
 
   cargar(): void {
-    this.api.get<any[]>('/refugios/').subscribe({
-      next: (data) => this.refugios.set(data),
+    this.api.get<Refugio[]>('/refugios/').subscribe({
+      next: (data) => this.refugios.set(editadoPrimero(data, this.ultimoEditadoId())),
       error: (err) => this.error.set(this.api.mensajeError(err))
     });
   }
@@ -44,6 +49,7 @@ export class AdminRefugiosComponent implements OnInit {
       this.form = this.vacio();
       this.editandoId.set(null);
       this.mostrarForm.set(true);
+      irAlFormulario('campo-nombre');
     }
     this.ok.set('');
     this.error.set('');
@@ -55,13 +61,14 @@ export class AdminRefugiosComponent implements OnInit {
     this.form = this.vacio();
   }
 
-  editar(r: any) {
+  editar(r: Refugio) {
     this.form = { nombre: r.nombre, direccion: r.direccion ?? '', telefono: r.telefono ?? '' };
     this.editandoId.set(r.id);
     this.confirmandoId.set(null);
     this.mostrarForm.set(true);
     this.ok.set('');
     this.error.set('');
+    irAlFormulario('campo-nombre');
   }
 
   guardar() {
@@ -74,13 +81,14 @@ export class AdminRefugiosComponent implements OnInit {
     };
     const id = this.editandoId();
     const peticion = id === null
-      ? this.api.post('/refugios/', cuerpo)
-      : this.api.put(`/refugios/${id}`, cuerpo);
+      ? this.api.post<Refugio>('/refugios/', cuerpo)
+      : this.api.put<Refugio>(`/refugios/${id}`, cuerpo);
 
     peticion.subscribe({
-      next: () => {
+      next: (guardado) => {
         this.enviando.set(false);
         this.ok.set(id === null ? 'Refugio creado.' : 'Refugio actualizado.');
+        this.ultimoEditadoId.set(guardado.id);   // el refugio guardado sube al primer lugar
         this.cerrarForm();
         this.cargar();
       },
@@ -91,7 +99,7 @@ export class AdminRefugiosComponent implements OnInit {
     });
   }
 
-  pedirEliminar(r: any) {
+  pedirEliminar(r: Refugio) {
     this.confirmandoId.set(r.id);
     this.ok.set('');
     this.error.set('');
@@ -101,7 +109,7 @@ export class AdminRefugiosComponent implements OnInit {
     this.confirmandoId.set(null);
   }
 
-  eliminar(r: any) {
+  eliminar(r: Refugio) {
     this.api.delete(`/refugios/${r.id}`).subscribe({
       next: () => {
         this.confirmandoId.set(null);

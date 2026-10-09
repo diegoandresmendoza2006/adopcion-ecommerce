@@ -2,10 +2,12 @@ import { Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
+import { NgIcon } from '@ng-icons/core';
 import { Subscription } from 'rxjs';
 import { API_URL } from '../../services/api.config';
 import { edadTexto, estaDisponible } from '../../services/formato';
 import { PaginacionComponent } from '../paginacion/paginacion.component';
+import { Mascota, Pagina } from '../../models/modelos';
 
 // Rangos de edad del filtro (el backend trabaja en MESES)
 const RANGOS_EDAD: Record<string, { min?: number; max?: number }> = {
@@ -19,14 +21,14 @@ const RANGOS_EDAD: Record<string, { min?: number; max?: number }> = {
 @Component({
   selector: 'app-catalogo',
   standalone: true,
-  imports: [CommonModule, RouterLink, PaginacionComponent],
+  imports: [CommonModule, RouterLink, NgIcon, PaginacionComponent],
   templateUrl: './catalogo.component.html',
   styleUrls: ['./catalogo.component.css']
 })
 export class CatalogoComponent implements OnInit, OnDestroy {
   // Signals: la app es "zoneless", así que Angular solo refresca la pantalla
   // cuando cambia un signal (una propiedad normal NO actualiza la vista).
-  mascotas = signal<any[]>([]);
+  mascotas = signal<Mascota[]>([]);
   total = signal(0);
   paginas = signal(1);
   cargando = signal(true);
@@ -43,7 +45,7 @@ export class CatalogoComponent implements OnInit, OnDestroy {
 
   hayFiltros = computed(() => !!(this.raza().trim() || this.especie() || this.rangoEdad() || this.soloDisponibles()));
 
-  private temporizador: any;
+  private temporizador?: ReturnType<typeof setTimeout>;
   private peticion?: Subscription;
 
   constructor(private http: HttpClient) {}
@@ -105,7 +107,7 @@ export class CatalogoComponent implements OnInit, OnDestroy {
     this.peticion?.unsubscribe();               // si había una búsqueda anterior en curso, se descarta
     this.cargando.set(true);
     this.error.set('');
-    this.peticion = this.http.get<any>(`${API_URL}/mascotas/buscar`, { params }).subscribe({
+    this.peticion = this.http.get<Pagina<Mascota>>(`${API_URL}/mascotas/buscar`, { params }).subscribe({
       next: (r) => {
         this.mascotas.set(r.items);
         this.total.set(r.total);
@@ -121,19 +123,19 @@ export class CatalogoComponent implements OnInit, OnDestroy {
     });
   }
 
-  edadTexto(m: any): string {
-    return edadTexto(m?.edad_meses);
+  edadTexto(m: Mascota): string {
+    return edadTexto(m.edad_meses);
   }
 
-  disponible(m: any): boolean {
+  disponible(m: Mascota): boolean {
     return estaDisponible(m);
   }
 
-  esAdoptada(m: any): boolean {
-    return (m?.estado_adopcion || '').toLowerCase() === 'adoptada';
+  esAdoptada(m: Mascota): boolean {
+    return m.estado_adopcion === 'Adoptada';
   }
 
-  enProceso(m: any): boolean {
-    return (m?.estado_adopcion || '').toLowerCase() === 'en proceso';
+  enProceso(m: Mascota): boolean {
+    return m.estado_adopcion === 'En Proceso';
   }
 }

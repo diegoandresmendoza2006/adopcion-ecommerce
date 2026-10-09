@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { EstadoSalud, Seguimiento, SeguimientoNuevo, Solicitud } from '../../models/modelos';
 
 @Component({
   selector: 'app-panel-seguimiento',
@@ -11,29 +12,28 @@ import { ApiService } from '../../services/api.service';
   styleUrls: ['./panel-seguimiento.component.css']
 })
 export class PanelSeguimientoComponent implements OnInit {
-  seguimientos = signal<any[]>([]);
-  adopciones = signal<any[]>([]);   // solo las aprobadas
+  seguimientos = signal<Seguimiento[]>([]);
+  adopciones = signal<Solicitud[]>([]);   // solo las aprobadas
   mostrarForm = signal(false);
   enviando = signal(false);
   error = signal('');
   ok = signal('');
 
-    estados = ['Excelente', 'Bueno', 'Regular', 'Malo'];
-  nuevo: { solicitud_id: number | null; estado_salud: string; observaciones_texto: string } =
-    { solicitud_id: null, estado_salud: 'Excelente', observaciones_texto: '' };
+  estados: EstadoSalud[] = ['Excelente', 'Bueno', 'Regular', 'Delicado'];
+  nuevo: SeguimientoNuevo = { solicitud_id: null, estado_salud: 'Excelente', observaciones_texto: '' };
 
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
     this.cargar();
-    this.api.get<any[]>('/adopciones/mis').subscribe({
+    this.api.get<Solicitud[]>('/adopciones/mis').subscribe({
       next: (data) => this.adopciones.set(data.filter(s => s.estado === 'Aprobada')),
       error: (err) => this.error.set(this.api.mensajeError(err))
     });
   }
 
   cargar(): void {
-    this.api.get<any[]>('/seguimientos/mis').subscribe({
+    this.api.get<Seguimiento[]>('/seguimientos/mis').subscribe({
       next: (data) => this.seguimientos.set(data),
       error: (err) => this.error.set(this.api.mensajeError(err))
     });
