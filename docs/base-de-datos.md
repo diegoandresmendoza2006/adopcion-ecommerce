@@ -3,6 +3,8 @@
 Motor: PostgreSQL · Esquema: `adopcion` · 12 tablas
 El esquema completo está en [`schema.sql`](../schema.sql).
 
+![Diagrama entidad-relación](erd.png)
+
 ## 1. Diagrama entidad-relación
 
 ```mermaid
