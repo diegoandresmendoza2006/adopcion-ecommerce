@@ -11,8 +11,8 @@ La app corre en tres servicios gratuitos. Las fotos ya viven en Cloudinary, así
 
 **Direcciones publicadas**
 
-- Frontend: _(pega aquí la URL)_
-- API: _(pega aquí la URL)_ (documentación en `/docs`)
+- Frontend: https://paws-shop.onrender.com
+- API: https://paws-shop-api.onrender.com (documentación en `/docs`)
 
 ## Variables de entorno del backend (en Render)
 
