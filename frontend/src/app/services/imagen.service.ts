@@ -21,8 +21,8 @@ export class ImagenService {
     form.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
     return this.http
-      .post<any>(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, form)
-      .pipe(map(r => r.secure_url as string));
+      .post<{ secure_url: string }>(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, form)
+      .pipe(map(r => r.secure_url));
   }
 
   // Valida el archivo antes de subirlo. Devuelve un texto de error o null si está bien.

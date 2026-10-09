@@ -1,18 +1,19 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { API_URL, ROL_ADMIN, ROL_ENCARGADO, ROL_USUARIO } from './api.config';
+import { API_URL } from './api.config';
+import { Credenciales, PayloadToken, RegistroUsuario, RespuestaLogin, Usuario } from '../models/modelos';
 
 function leerToken(): string | null {
   const t = localStorage.getItem('token') || localStorage.getItem('access_token');
   return t ? t.replace(/["']/g, '').trim() : null;
 }
 
-function decodificar(token: string | null): any {
+function decodificar(token: string | null): PayloadToken | null {
   if (!token) return null;
   try {
     const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(payload));
+    return JSON.parse(atob(payload)) as PayloadToken;
   } catch {
     return null;
   }
@@ -32,17 +33,6 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
-  // Página de inicio según el rol (también es a donde se manda a quien entra a una página que no es suya)
-  rutaInicio(): string {
-    if (!this.logueado()) return '/login';
-    switch (this.rolId()) {
-      case ROL_ADMIN: return '/admin-dashboard';
-      case ROL_ENCARGADO: return '/encargado-solicitudes';
-      case ROL_USUARIO: return '/catalogo';
-      default: return '/login';
-    }
-  }
-
   token(): string | null {
     return this._token();
   }
@@ -59,19 +49,19 @@ export class AuthService {
     this._token.set(null);
   }
 
-  login(credentials: any): Observable<any> {
+  login(credentials: Credenciales): Observable<RespuestaLogin> {
     const body = new URLSearchParams();
-    body.set('username', credentials.username || credentials.email);
+    body.set('username', credentials.username);
     body.set('password', credentials.password);
 
     const headers = new HttpHeaders({
       'Content-Type': 'application/x-www-form-urlencoded'
     });
 
-    return this.http.post(`${this.apiUrl}/auth/login`, body.toString(), { headers });
+    return this.http.post<RespuestaLogin>(`${this.apiUrl}/auth/login`, body.toString(), { headers });
   }
 
-  registro(userData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/registro`, userData);
+  registro(userData: RegistroUsuario): Observable<Usuario> {
+    return this.http.post<Usuario>(`${this.apiUrl}/auth/registro`, userData);
   }
 }
