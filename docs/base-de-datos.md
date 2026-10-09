@@ -173,8 +173,8 @@ Se eliminaron las dependencias transitivas separando las entidades:
 | `detalles_orden.precio_unitario` | Es el precio **al momento de la compra**. Si el precio del producto cambia después, el pedido antiguo no debe cambiar. |
 | `ordenes_compra.total` | Se puede calcular sumando `detalles_orden`, pero se guarda para consultas y reportes rápidos. Se escribe una sola vez, dentro de la misma transacción que crea el pedido. |
 | `auditoria.nombre_usuario` | Se copia el nombre en vez de apuntar a `usuarios`, para que el registro sobreviva aunque se elimine al usuario. |
-|`solicitudes_adopcion.nombre_contacto`, `telefono`, `email_contacto`, `direccion` y `fecha_nacimiento` | Son los datos que el adoptante declaró **en esa solicitud**, no necesariamente los de su perfil (pueden cambiar con el tiempo, por eso se guardan como una foto del momento y no dependen de `usuarios`). El resto de respuestas del formulario describen la vivienda y el hogar en ese momento. |
-`solicitudes_adopcion.comentario_encargado` y `fecha_respuesta` | Dependen solo de la solicitud (su clave primaria), así que no rompen la 2FN ni la 3FN. || Son los datos que el adoptante declaró **en esa solicitud**, no necesariamente los de su perfil. |
+| `solicitudes_adopcion.nombre_contacto`, `telefono`, `email_contacto`, `direccion` y `fecha_nacimiento` | Son los datos que el adoptante declaró **en esa solicitud**, no necesariamente los de su perfil (pueden cambiar con el tiempo, por eso se guardan como una foto del momento y no dependen de `usuarios`). El resto de respuestas del formulario describen la vivienda y el hogar en ese momento. |
+| `solicitudes_adopcion.comentario_encargado` y `fecha_respuesta` | Dependen solo de la solicitud (su clave primaria), así que no rompen la 2FN ni la 3FN. || Son los datos que el adoptante declaró **en esa solicitud**, no necesariamente los de su perfil. |
 | Estados como texto con CHECK | Con 3 a 6 valores fijos, un CHECK es más simple que una tabla de catálogo y la base igual rechaza valores inválidos. |
 
 Fuera de estas excepciones documentadas, el modelo cumple 3FN.

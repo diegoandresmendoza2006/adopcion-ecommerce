@@ -1,5 +1,6 @@
+import os
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware  # 1. Importa el middleware aquí
+from fastapi.middleware.cors import CORSMiddleware
 from . import models
 from .database import engine
 from .routers import productos
@@ -13,10 +14,15 @@ from .routers import admin
 
 app = FastAPI(title="API - Adopción y E-commerce")
 
-# 2. Agrega esta configuración de CORS justo aquí
+# Orígenes (páginas web) que pueden llamar a esta API.
+# Local: Angular en localhost:4200. En producción define CORS_ORIGINS en el servidor con la
+# dirección de tu frontend, separando varias con comas. Ej: https://paws-shop.onrender.com
+_origenes = ["http://localhost:4200", "http://127.0.0.1:4200"]
+_origenes += [o.strip().rstrip("/") for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-        allow_origins=["http://localhost:4200", "http://127.0.0.1:4200"],  # Permite que Angular se conecte
+    allow_origins=_origenes,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
