@@ -14,7 +14,12 @@ def registrar_usuario(usuario: schemas.UsuarioCreate, db: Session = Depends(get_
     # 1. Verificar si el correo ya existe
     usuario_existente = db.query(models.Usuario).filter(models.Usuario.email == usuario.email).first()
     if usuario_existente:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El correo ya está registrado")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales incorrectas",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
 
     # 2. Encriptar la contraseña
     hashed_pwd = security.hash_password(usuario.password)

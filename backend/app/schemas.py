@@ -8,9 +8,10 @@ from typing import Literal, Optional
 # ----------------------------------------
 
 class UsuarioCreate(BaseModel):
-    nombre_completo: str
+    nombre_completo: str = Field(min_length=2, max_length=100)
     email: EmailStr
-    password: str
+    password: str = Field(min_length=8, max_length=72)   # 72 = límite real de bcrypt
+
     rol_id: int = 3  # Asignamos el ID 3 por defecto (Rol: 'Usuario')
     refugio_id: Optional[int] = None
 
@@ -276,7 +277,8 @@ class SeguimientoOut(BaseModel):
 class EncargadoCreate(BaseModel):
     nombre_completo: str
     email: EmailStr
-    password: str = Field(min_length=6)
+    password: str = Field(min_length=8, max_length=72)
+
     refugio_id: int
 
 

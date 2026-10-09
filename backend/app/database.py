@@ -9,6 +9,9 @@ load_dotenv()
 
 # Lee la URL de la base de datos desde el entorno
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
+if not SQLALCHEMY_DATABASE_URL:
+    raise RuntimeError("Falta DATABASE_URL en backend/.env (mira backend/.env.example)")
+
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

@@ -17,8 +17,8 @@
       <p class="leyenda full">Los campos con <span class="asterisco">*</span> son obligatorios</p>
       <div><label for="enc-nombre" class="req">Nombre completo</label><input id="enc-nombre" [(ngModel)]="nuevo.nombre_completo" name="nombre_completo" required></div>
       <div><label for="enc-correo" class="req">Correo electrónico</label><input id="enc-correo" type="email" [(ngModel)]="nuevo.email" name="email" required></div>
-      <div><label for="enc-clave" class="req">Contraseña (mín. 6)</label>
-        <app-campo-password inputId="enc-clave" name="password" [(ngModel)]="nuevo.password" autocomplete="new-password" minlength="6" required />
+      <div><label for="enc-clave" class="req">Contraseña (mín. 8)</label>
+        <app-campo-password inputId="enc-clave" name="password" [(ngModel)]="nuevo.password" autocomplete="new-password" minlength="8" required/>
       </div>
       <div><label for="enc-refugio" class="req">Sede / Refugio</label>
         <select id="enc-refugio" [(ngModel)]="nuevo.refugio_id" name="refugio_id" required>

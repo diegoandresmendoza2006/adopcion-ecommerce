@@ -12,7 +12,15 @@ from . import models
 load_dotenv()
 
 # La clave ahora sale del archivo backend/.env  (agrega la línea SECRET_KEY=lo-que-quieras)
-SECRET_KEY = os.getenv("SECRET_KEY", "cambia-esta-clave-en-el-archivo-env")
+# La clave sale de backend/.env (línea SECRET_KEY=...). Es OBLIGATORIA: sin ella cualquiera
+# podría fabricar tokens válidos, así que la app se niega a arrancar si falta o es corta.
+SECRET_KEY = os.getenv("SECRET_KEY", "")
+if len(SECRET_KEY) < 16:
+    raise RuntimeError(
+        "Falta SECRET_KEY en backend/.env (mínimo 16 caracteres). "
+        "Genera una con: python -c \"import secrets; print(secrets.token_urlsafe(48))\""
+    )
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 

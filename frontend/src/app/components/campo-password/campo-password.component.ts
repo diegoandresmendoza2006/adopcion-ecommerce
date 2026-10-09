@@ -4,7 +4,8 @@ import { NgIcon } from '@ng-icons/core';
 
 // Campo de contraseña con el "ojito" para mostrar u ocultar lo que escribes.
 // Funciona igual que un <input> normal con ngModel:
-//   <app-campo-password inputId="clave" name="password" [(ngModel)]="datos.password" required minlength="6" />
+//   <app-campo-password inputId="clave" name="password" [(ngModel)]="datos.password" required minlength="8" />
+
 @Component({
   selector: 'app-campo-password',
   standalone: true,
