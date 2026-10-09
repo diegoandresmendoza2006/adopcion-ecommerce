@@ -3,27 +3,33 @@
     <a routerLink="/login" class="nav-link">Login</a>
     <a routerLink="/register" class="nav-link">Registro</a>
   } @else {
-    <a routerLink="/catalogo" class="nav-link"><ng-icon name="lucideDog" size="16" /> Catálogo</a>
-    <a routerLink="/tienda" class="nav-link"><ng-icon name="lucideShoppingBag" size="16" /> Tienda</a>
-    <a routerLink="/favoritos" class="nav-link"><ng-icon name="lucideHeart" size="16" /> Favs ({{ carrito.favoritos().length }})</a>
-    <a routerLink="/carrito" class="nav-link"><ng-icon name="lucideShoppingCart" size="16" /> Carrito ({{ carrito.cantidadTotal() }})</a>
-    <a routerLink="/mis-solicitudes" class="nav-link"><ng-icon name="lucideClipboardList" size="16" /> Trámites</a>
-    <a routerLink="/seguimientos" class="nav-link"><ng-icon name="lucideTrendingUp" size="16" /> Mis Seg.</a>
+    @if (esUsuario()) {
+      <a routerLink="/catalogo" class="nav-link"><ng-icon name="lucideDog" size="16" /> Catálogo</a>
+      <a routerLink="/tienda" class="nav-link"><ng-icon name="lucideShoppingBag" size="16" /> Tienda</a>
+      <a routerLink="/favoritos" class="nav-link"><ng-icon name="lucideHeart" size="16" /> Favs ({{ carrito.favoritos().length }})</a>
+      <a routerLink="/carrito" class="nav-link"><ng-icon name="lucideShoppingCart" size="16" /> Carrito ({{ carrito.cantidadTotal() }})</a>
+      <a routerLink="/mis-solicitudes" class="nav-link"><ng-icon name="lucideClipboardList" size="16" /> Trámites</a>
+      <a routerLink="/seguimientos" class="nav-link"><ng-icon name="lucideTrendingUp" size="16" /> Mis Seg.</a>
+    }
 
-    <!-- Encargado y Administrador (cada enlace aparece UNA sola vez) -->
+    <!-- Encargado y Administrador comparten Mascotas y Productos (cada enlace UNA sola vez) -->
     @if (esStaff()) {
       <a routerLink="/encargado-mascotas" class="nav-link"><ng-icon name="lucidePawPrint" size="16" /> Mascotas</a>
       <a routerLink="/encargado-productos" class="nav-link"><ng-icon name="lucidePackage" size="16" /> Productos</a>
-      <a routerLink="/encargado-solicitudes" class="nav-link"><ng-icon name="lucideShieldCheck" size="16" /> Solicitudes</a>
-      <a routerLink="/encargado-ver-seguimientos" class="nav-link"><ng-icon name="lucideEye" size="16" /> Ver Seg.</a>
     }
 
     <!-- Solo Administrador -->
     @if (auth.rolId() === ROL_ADMIN) {
       <a routerLink="/admin-refugios" class="nav-link"><ng-icon name="lucideBuilding2" size="16" /> Refugios</a>
-      <a routerLink="/admin-dashboard" class="nav-link"><ng-icon name="lucideChartColumn" size="16" /> Dashboard</a>
       <a routerLink="/admin-encargados" class="nav-link"><ng-icon name="lucideUsers" size="16" /> Encargados</a>
+      <a routerLink="/admin-dashboard" class="nav-link"><ng-icon name="lucideChartColumn" size="16" /> Dashboard</a>
       <a routerLink="/admin-auditoria" class="nav-link"><ng-icon name="lucideScrollText" size="16" /> Auditoría</a>
+    }
+
+    <!-- Solo Encargado -->
+    @if (auth.rolId() === ROL_ENCARGADO) {
+      <a routerLink="/encargado-solicitudes" class="nav-link"><ng-icon name="lucideShieldCheck" size="16" /> Solicitudes</a>
+      <a routerLink="/encargado-ver-seguimientos" class="nav-link"><ng-icon name="lucideEye" size="16" /> Ver Seg.</a>
     }
     <a href="#" (click)="$event.preventDefault(); salir()" class="nav-link" style="color: #ffb3b3;"><ng-icon name="lucideLogOut" size="16" /> Salir</a>
   }

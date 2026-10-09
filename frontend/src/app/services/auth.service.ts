@@ -1,7 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { API_URL } from './api.config';
+import { API_URL, ROL_ADMIN, ROL_ENCARGADO } from './api.config';
 import { Credenciales, PayloadToken, RegistroUsuario, RespuestaLogin, Usuario } from '../models/modelos';
 
 function leerToken(): string | null {
@@ -47,6 +47,15 @@ export class AuthService {
     localStorage.removeItem('token');
     localStorage.removeItem('access_token');
     this._token.set(null);
+  }
+
+  // Pantalla de inicio según el rol (la usan los guards, las rutas y el login)
+  rutaInicio(): string {
+    if (!this.logueado()) return '/login';
+    const rol = this.rolId();
+    if (rol === ROL_ADMIN) return '/admin-dashboard';
+    if (rol === ROL_ENCARGADO) return '/encargado-mascotas';
+    return '/catalogo';
   }
 
   login(credentials: Credenciales): Observable<RespuestaLogin> {

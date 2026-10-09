@@ -25,6 +25,10 @@ export class App {
     return rol === ROL_ADMIN || rol === ROL_ENCARGADO;
   }
 
+  esUsuario(): boolean {
+    return !this.esStaff();
+  }
+
   salir(): void {
     this.auth.cerrarSesion();
     this.router.navigate(['/login']);

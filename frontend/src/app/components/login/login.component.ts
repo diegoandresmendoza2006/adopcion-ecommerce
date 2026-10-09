@@ -31,7 +31,7 @@ export class LoginComponent {
         if (response.access_token) {
           this.authService.guardarToken(response.access_token);
           this.mensaje.set('¡Ingreso exitoso!');
-          this.router.navigate(['/catalogo']);
+          this.router.navigateByUrl(this.authService.rutaInicio());
         }
       },
       error: (err: { status?: number }) => {
