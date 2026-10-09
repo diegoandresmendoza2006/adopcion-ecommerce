@@ -8,6 +8,17 @@ los encargados gestionan su refugio; el administrador supervisa todo el sistema.
 - **Fotos:** Cloudinary (subida desde el navegador)
 - **Autenticación:** JWT con roles
 
+## Demo en la nube
+
+| Pieza | Dirección |
+|---|---|
+| Aplicación | https://paws-shop.onrender.com |
+| API (documentación interactiva) | https://paws-shop-api.onrender.com/docs |
+
+Corre en planes gratuitos: Neon (PostgreSQL), Render (API y página) y Cloudinary (fotos). Si nadie la usó en
+los últimos 15 minutos, la primera carga puede tardar hasta 1 minuto mientras la API despierta.
+Cómo se desplegó: [docs/despliegue.md](docs/despliegue.md).
+
 ## Roles
 
 | Rol | Qué puede hacer | Menú |
@@ -41,6 +52,11 @@ vivienda, entorno, experiencia previa, disponibilidad) y el comentario del encar
 el **usuario dueño de las tablas** (por ejemplo `postgres`), porque modifica la estructura. Es segura de
 repetir y conserva las solicitudes existentes. Si `schema.sql` ya fue generado después de esta
 migración, ya incluye esas columnas.
+En una base nueva y vacía (por ejemplo la de la nube), crea los roles y el primer administrador con:
+```bash
+cd backend
+python scripts/crear_admin.py
+```
 
 ### 2. Backend
 ```bash
