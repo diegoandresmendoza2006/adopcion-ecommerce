@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, Numeric, TIMESTAMP, JSON
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, Numeric, TIMESTAMP, JSON, Boolean, Date
 from sqlalchemy.sql import func
 from .database import Base
 
@@ -48,10 +48,30 @@ class SolicitudAdopcion(Base):
     mascota_id = Column(Integer, ForeignKey("adopcion.mascotas.id"), nullable=False)
     estado = Column(String(50), nullable=False)
     fecha_solicitud = Column(TIMESTAMP, server_default=func.now())
+    # --- Formulario del adoptante: datos personales ---
     nombre_contacto = Column(String(150))
+    fecha_nacimiento = Column(Date)
     telefono = Column(String(30))
-    tipo_vivienda = Column(String(50))
+    email_contacto = Column(String(100))
+    direccion = Column(String(255))
+    # --- Vivienda, entorno y espacio ---
+    tipo_vivienda = Column(String(50))              # 'Propia' | 'Arrendada'
+    vivienda_permite_mascotas = Column(Boolean)
+    tiene_patio = Column(Boolean)
+    tiene_cercas = Column(Boolean)
+    personas_hogar = Column(Integer)
+    # --- Experiencia previa ---
+    tuvo_mascotas = Column(Boolean)
+    mascotas_vacunadas = Column(Boolean)
+    mascotas_esterilizadas = Column(Boolean)
+    # --- Disponibilidad y estilo de vida ---
+    horas_solo = Column(Integer)
+    responsable_viajes = Column(Text)
     motivo = Column(Text)
+    # --- Respuesta del encargado (la ve el adoptante) ---
+    comentario_encargado = Column(Text)
+    fecha_respuesta = Column(TIMESTAMP)
+
 
 class SeguimientoAdopcion(Base):
     __tablename__ = "seguimiento_adopciones"
