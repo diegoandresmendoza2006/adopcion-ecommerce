@@ -29,7 +29,7 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <span class="font-bold text-xl tracking-wider cursor-pointer" onclick="navegar('vista-home')">🐾 Paws&Shop</span>
+                    <span class="font-bold text-xl tracking-wider cursor-pointer" onclick="navegar('vista-home')">Paws&Shop</span>
                 </div>
                 <div class="flex items-center space-x-3" id="menu-navegacion">
                     <!-- Enlaces de Invitado / Usuario -->
@@ -38,17 +38,18 @@
                     <button onclick="navegar('vista-catalogo-tienda')" class="nav-item hover:bg-indigo-500 px-3 py-2 rounded text-sm" data-roles="invitado,usuario">Tienda</button>
                     
                     <button onclick="navegar('vista-mis-solicitudes')" class="nav-item hover:bg-indigo-500 px-3 py-2 rounded text-sm" data-roles="usuario">Mis Solicitudes</button>
-                    <button onclick="navegar('vista-panel-seguimiento')" class="nav-item hover:bg-indigo-500 px-3 py-2 rounded text-sm" data-roles="usuario">📋 Mis Seguimientos</button>
-                    <button onclick="navegar('vista-favoritos')" class="nav-item hover:bg-indigo-500 px-3 py-2 rounded text-sm" data-roles="usuario">❤️ Favoritos (1)</button>
-                    <button onclick="navegar('vista-carrito')" class="nav-item bg-green-500 hover:bg-green-400 px-3 py-2 rounded text-sm" data-roles="usuario">🛒 Carrito (2)</button>
+                    <button onclick="navegar('vista-panel-seguimiento')" class="nav-item hover:bg-indigo-500 px-3 py-2 rounded text-sm" data-roles="usuario">Mis Seguimientos</button>
+                    <button onclick="navegar('vista-favoritos')" class="nav-item hover:bg-indigo-500 px-3 py-2 rounded text-sm" data-roles="usuario">Favoritos (1)</button>
+                    <button onclick="navegar('vista-carrito')" class="nav-item bg-green-500 hover:bg-green-400 px-3 py-2 rounded text-sm" data-roles="usuario">Carrito (2)</button>
                     
                     <!-- Menús de Encargado (Incluye revisión de seguimientos enviados por usuarios) -->
-                    <button onclick="navegar('vista-encargado-mascotas')" class="nav-item hover:bg-indigo-500 px-3 py-2 rounded text-sm" data-roles="encargado">Mascotas</button>
-                    <button onclick="navegar('vista-encargado-productos')" class="nav-item hover:bg-indigo-500 px-3 py-2 rounded text-sm" data-roles="encargado">Tienda</button>
+                    <button onclick="navegar('vista-encargado-mascotas')" class="nav-item hover:bg-indigo-500 px-3 py-2 rounded text-sm" data-roles="encargado,admin">Mascotas</button>
+                    <button onclick="navegar('vista-encargado-productos')" class="nav-item hover:bg-indigo-500 px-3 py-2 rounded text-sm" data-roles="encargado,admin">Productos</button>
                     <button onclick="navegar('vista-encargado-solicitudes')" class="nav-item hover:bg-indigo-500 px-3 py-2 rounded text-sm" data-roles="encargado">Solicitudes</button>
-                    <button onclick="navegar('vista-encargado-ver-seguimientos')" class="nav-item hover:bg-indigo-500 px-3 py-2 rounded text-sm" data-roles="encargado">👀 Ver Seguimientos</button>
+                    <button onclick="navegar('vista-encargado-ver-seguimientos')" class="nav-item hover:bg-indigo-500 px-3 py-2 rounded text-sm" data-roles="encargado">Ver Seguimientos</button>
                     
-                    <!-- Menús de Admin -->
+                    <!-- Menús de Admin (además de Mascotas y Productos, compartidos con el encargado) -->
+                    <button onclick="navegar('vista-admin-refugios')" class="nav-item hover:bg-indigo-500 px-3 py-2 rounded text-sm" data-roles="admin">Refugios</button>
                     <button onclick="navegar('vista-admin-dashboard')" class="nav-item hover:bg-indigo-500 px-3 py-2 rounded text-sm" data-roles="admin">Dashboard</button>
                     <button onclick="navegar('vista-admin-encargados')" class="nav-item hover:bg-indigo-500 px-3 py-2 rounded text-sm" data-roles="admin">Encargados</button>
                     <button onclick="navegar('vista-admin-auditoria')" class="nav-item hover:bg-indigo-500 px-3 py-2 rounded text-sm" data-roles="admin">Auditoría</button>
@@ -83,13 +84,19 @@
             <h2 class="text-2xl font-bold mb-6 text-center text-indigo-600">Iniciar Sesión</h2>
             <form onsubmit="event.preventDefault(); alert('Login exitoso'); cambiarRol('usuario');">
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Correo Electrónico</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Correo Electrónico <span class="text-red-600">*</span></label>
                     <input type="email" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500" required>
                 </div>
                 <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Contraseña</label>
-                    <input type="password" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500" required>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Contraseña <span class="text-red-600">*</span></label>
+                    <div class="relative">
+                        <input type="password" class="w-full px-3 py-2 pr-11 border rounded-lg focus:ring-2 focus:ring-indigo-500" required minlength="8" placeholder="Mínimo 8 caracteres">
+                        <button type="button" onclick="verClave(this)" class="absolute inset-y-0 right-0 px-3 text-gray-500 hover:text-indigo-600" aria-label="Mostrar u ocultar contraseña" title="Mostrar u ocultar contraseña">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    </div>
                 </div>
+                <p class="text-xs text-gray-500 mb-3"><span class="text-red-600">*</span> Campo obligatorio</p>
                 <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700">Ingresar</button>
                 <p class="mt-4 text-center text-sm text-gray-600">¿No tienes cuenta? <span onclick="navegar('vista-registro')" class="text-indigo-600 underline cursor-pointer">Regístrate aquí</span></p>
             </form>
@@ -100,17 +107,23 @@
             <h2 class="text-2xl font-bold mb-6 text-center text-indigo-600">Crear una Cuenta</h2>
             <form onsubmit="event.preventDefault(); alert('Registro exitoso. Ahora puedes iniciar sesión.'); navegar('vista-login');">
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Nombre Completo</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Nombre Completo <span class="text-red-600">*</span></label>
                     <input type="text" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500" required>
                 </div>
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Correo Electrónico</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Correo Electrónico <span class="text-red-600">*</span></label>
                     <input type="email" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500" required>
                 </div>
                 <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Contraseña</label>
-                    <input type="password" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500" required>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Contraseña <span class="text-red-600">*</span></label>
+                    <div class="relative">
+                        <input type="password" class="w-full px-3 py-2 pr-11 border rounded-lg focus:ring-2 focus:ring-indigo-500" required minlength="8" placeholder="Mínimo 8 caracteres">
+                        <button type="button" onclick="verClave(this)" class="absolute inset-y-0 right-0 px-3 text-gray-500 hover:text-indigo-600" aria-label="Mostrar u ocultar contraseña" title="Mostrar u ocultar contraseña">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    </div>
                 </div>
+                <p class="text-xs text-gray-500 mb-3"><span class="text-red-600">*</span> Campo obligatorio</p>
                 <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700">Registrarse</button>
                 <p class="mt-4 text-center text-sm text-gray-600">¿Ya tienes cuenta? <span onclick="navegar('vista-login')" class="text-indigo-600 underline cursor-pointer">Inicia sesión</span></p>
             </form>
@@ -146,9 +159,62 @@
                         <p><strong>Edad:</strong> 12 meses</p>
                         <p><strong>Estado:</strong> Disponible para adopción</p>
                     </div>
-                    <button onclick="alert('¡Solicitud de adopción enviada con éxito!'); navegar('vista-mis-solicitudes');" class="mt-6 w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700 transition">Solicitar Adopción</button>
+                    <button onclick="navegar('vista-solicitud-adopcion')" class="mt-6 w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700 transition">Solicitar Adopción</button>
                 </div>
             </div>
+        </div>
+
+
+        <!-- VISTA: FORMULARIO DE SOLICITUD DE ADOPCIÓN (Usuario) -->
+        <div id="vista-solicitud-adopcion" class="vista max-w-3xl mx-auto">
+            <button onclick="navegar('vista-detalle-mascota')" class="text-indigo-600 mb-4">&larr; Volver a la mascota</button>
+            <h2 class="text-2xl font-bold mb-1">Solicitud de adopción: Firulais</h2>
+            <p class="text-sm text-gray-500 mb-6"><span class="text-red-600">*</span> Campo obligatorio. Debes ser mayor de 18 años.</p>
+            <form class="space-y-6" onsubmit="event.preventDefault(); alert('Solicitud enviada. Queda En Revisión.'); navegar('vista-mis-solicitudes');">
+                <fieldset class="bg-white p-5 rounded-lg shadow-md">
+                    <legend class="px-2 font-bold text-indigo-600">1. Datos personales</legend>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class=""><label class="block text-sm font-bold mb-1">Nombre completo <span class="text-red-600">*</span></label><input type="text" placeholder="Ana Pérez"  class="w-full px-3 py-2 border rounded-lg" required></div>
+                        <div class=""><label class="block text-sm font-bold mb-1">Fecha de nacimiento <span class="text-red-600">*</span></label><input type="date" placeholder=""  class="w-full px-3 py-2 border rounded-lg" required></div>
+                        <div class=""><label class="block text-sm font-bold mb-1">Teléfono <span class="text-red-600">*</span></label><input type="tel" placeholder="300 123 4567"  class="w-full px-3 py-2 border rounded-lg" required></div>
+                        <div class=""><label class="block text-sm font-bold mb-1">Correo electrónico <span class="text-red-600">*</span></label><input type="email" placeholder="ana@correo.com"  class="w-full px-3 py-2 border rounded-lg" required></div>
+                        <div class="md:col-span-2"><label class="block text-sm font-bold mb-1">Dirección <span class="text-red-600">*</span></label><input type="text" placeholder="Calle 1 # 2-3"  class="w-full px-3 py-2 border rounded-lg" required></div>
+                    </div>
+                </fieldset>
+                <fieldset class="bg-white p-5 rounded-lg shadow-md">
+                    <legend class="px-2 font-bold text-indigo-600">2. Tipo de vivienda</legend>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div><label class="block text-sm font-bold mb-1">La vivienda es <span class="text-red-600">*</span></label><select class="w-full px-3 py-2 border rounded-lg"><option>Propia</option><option>Arrendada</option></select></div>
+                        <div><span class="block text-sm font-bold mb-1">El propietario o reglamento permite animales <span class="text-red-600">*</span></span><label class="mr-4"><input type="radio" name="permite" required> Sí</label><label><input type="radio" name="permite"> No</label></div>
+                    </div>
+                </fieldset>
+                <fieldset class="bg-white p-5 rounded-lg shadow-md">
+                    <legend class="px-2 font-bold text-indigo-600">3. Entorno y espacio</legend>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div><span class="block text-sm font-bold mb-1">Tiene patio o jardín <span class="text-red-600">*</span></span><label class="mr-4"><input type="radio" name="patio" required> Sí</label><label><input type="radio" name="patio"> No</label></div>
+                        <div><span class="block text-sm font-bold mb-1">Tiene cercas de seguridad <span class="text-red-600">*</span></span><label class="mr-4"><input type="radio" name="cercas" required> Sí</label><label><input type="radio" name="cercas"> No</label></div>
+                        <div class=""><label class="block text-sm font-bold mb-1">Personas en el núcleo familiar <span class="text-red-600">*</span></label><input type="number" placeholder="3" min="1" max="30" class="w-full px-3 py-2 border rounded-lg" required></div>
+                    </div>
+                </fieldset>
+                <fieldset class="bg-white p-5 rounded-lg shadow-md">
+                    <legend class="px-2 font-bold text-indigo-600">4. Experiencia previa</legend>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div><span class="block text-sm font-bold mb-1">Tiene o ha tenido animales de compañía <span class="text-red-600">*</span></span><label class="mr-4"><input type="radio" name="previas" required> Sí</label><label><input type="radio" name="previas"> No</label></div>
+                        <p class="text-sm text-gray-500 self-end">Si responde Sí, también debe indicar vacunación y esterilización:</p>
+                        <div><span class="block text-sm font-bold mb-1">Estaban vacunados <span class="text-red-600">*</span></span><label class="mr-4"><input type="radio" name="vac" required> Sí</label><label><input type="radio" name="vac"> No</label></div>
+                        <div><span class="block text-sm font-bold mb-1">Estaban esterilizados <span class="text-red-600">*</span></span><label class="mr-4"><input type="radio" name="est" required> Sí</label><label><input type="radio" name="est"> No</label></div>
+                    </div>
+                </fieldset>
+                <fieldset class="bg-white p-5 rounded-lg shadow-md">
+                    <legend class="px-2 font-bold text-indigo-600">5. Disponibilidad y estilo de vida</legend>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class=""><label class="block text-sm font-bold mb-1">Horas al día que estaría solo <span class="text-red-600">*</span></label><input type="number" placeholder="6" min="0" max="24" class="w-full px-3 py-2 border rounded-lg" required></div>
+                        <div class=""><label class="block text-sm font-bold mb-1">Quién se hará cargo en viajes o emergencias <span class="text-red-600">*</span></label><input type="text" placeholder="Mi mamá"  class="w-full px-3 py-2 border rounded-lg" required></div>
+                        <div class="md:col-span-2"><label class="block text-sm font-bold mb-1">Motivo (opcional)</label><textarea rows="3" class="w-full px-3 py-2 border rounded-lg" placeholder="Cuéntanos por qué quieres adoptar"></textarea></div>
+                    </div>
+                </fieldset>
+                <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700">Enviar solicitud</button>
+            </form>
         </div>
 
         <!-- VISTA: TIENDA -->
@@ -162,7 +228,7 @@
                     <p class="text-indigo-600 font-bold text-xl mt-auto">$45.00</p>
                     <div class="mt-4 flex space-x-2">
                         <button onclick="alert('Añadido al carrito')" class="flex-1 bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 text-sm transition">Añadir al Carrito</button>
-                        <button onclick="alert('Añadido a Favoritos (Wishlist)')" class="border border-red-500 text-red-500 px-3 py-2 rounded hover:bg-red-50 text-sm transition">❤️</button>
+                        <button onclick="alert('Añadido a Favoritos (Wishlist)')" class="border border-red-500 text-red-500 px-3 py-2 rounded hover:bg-red-50 text-sm transition"></button>
                     </div>
                 </div>
                 <div class="bg-white rounded-lg shadow-md overflow-hidden flex flex-col p-4">
@@ -172,7 +238,7 @@
                     <p class="text-indigo-600 font-bold text-xl mt-auto">$15.00</p>
                     <div class="mt-4 flex space-x-2">
                         <button onclick="alert('Añadido al carrito')" class="flex-1 bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 text-sm transition">Añadir al Carrito</button>
-                        <button onclick="alert('Añadido a Favoritos (Wishlist)')" class="border border-red-500 text-red-500 px-3 py-2 rounded hover:bg-red-50 text-sm transition">❤️</button>
+                        <button onclick="alert('Añadido a Favoritos (Wishlist)')" class="border border-red-500 text-red-500 px-3 py-2 rounded hover:bg-red-50 text-sm transition"></button>
                     </div>
                 </div>
             </div>
@@ -194,21 +260,32 @@
         <!-- VISTA: MIS SOLICITUDES (Usuario) -->
         <div id="vista-mis-solicitudes" class="vista">
             <h2 class="text-2xl font-bold mb-6">Mis Trámites de Adopción</h2>
+            <div class="overflow-x-auto">
             <table class="w-full bg-white shadow-md rounded overflow-hidden">
-                <tr class="bg-gray-200 text-left"><th class="p-3">Mascota</th><th class="p-3">Fecha</th><th class="p-3">Estado</th><th class="p-3">Acción del Usuario</th></tr>
+                <tr class="bg-gray-200 text-left"><th class="p-3">Mascota</th><th class="p-3">Fecha</th><th class="p-3">Estado</th><th class="p-3">Mensaje del refugio</th><th class="p-3">Acción del Usuario</th></tr>
                 <tr class="border-b">
                     <td class="p-3 font-semibold">Firulais</td>
                     <td class="p-3">15/09/2026</td>
                     <td class="p-3"><span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded text-xs font-bold">En Revisión</span></td>
+                    <td class="p-3 text-gray-400 text-sm">Aún sin respuesta</td>
                     <td class="p-3 text-gray-400 text-sm">Sin acciones pendientes</td>
                 </tr>
-                <tr>
+                <tr class="border-b">
                     <td class="p-3 font-semibold">Luna</td>
                     <td class="p-3">10/08/2026</td>
                     <td class="p-3"><span class="bg-green-200 text-green-800 px-2 py-1 rounded text-xs font-bold">Aprobada</span></td>
-                    <td class="p-3"><button onclick="alert('Generando y descargando Certificado de Adopción en PDF...')" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700 transition">📄 Descargar Mi Certificado PDF</button></td>
+                    <td class="p-3 text-sm">Pasa a recogerla el lunes con tu cédula.</td>
+                    <td class="p-3"><button onclick="alert('Generando y descargando Certificado de Adopción en PDF...')" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700 transition">Descargar Mi Certificado PDF</button></td>
+                </tr>
+                <tr>
+                    <td class="p-3 font-semibold">Toby</td>
+                    <td class="p-3">02/08/2026</td>
+                    <td class="p-3"><span class="bg-red-200 text-red-800 px-2 py-1 rounded text-xs font-bold">Rechazada</span></td>
+                    <td class="p-3 text-sm">Toby necesita un hogar con patio cercado. Te invitamos a ver otras mascotas.</td>
+                    <td class="p-3 text-gray-400 text-sm">Sin acciones pendientes</td>
                 </tr>
             </table>
+            </div>
         </div>
 
         <!-- VISTA: PANEL DE SEGUIMIENTO (Usuario envía reportes de salud) -->
@@ -261,15 +338,37 @@
             </div>
         </div>
 
-        <!-- VISTA: ENCARGADO - MASCOTAS -->
+        <!-- VISTA: ENCARGADO / ADMIN - MASCOTAS -->
         <div id="vista-encargado-mascotas" class="vista">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold">Inventario de Mascotas (Sede Asignada)</h2>
-                <button onclick="alert('Formulario para registrar mascota con subida de foto')" class="bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700">+ Registrar Mascota</button>
+                <h2 class="text-2xl font-bold">Inventario de Mascotas</h2>
+                <button onclick="alert('Formulario para registrar mascota con subida de foto. Edad en meses: máximo 240')" class="bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700">+ Registrar Mascota</button>
             </div>
-            <div class="bg-white p-8 rounded text-center text-gray-500 border-2 border-dashed">
-                CRUD de Mascotas con carga de archivos locales.
+            <div class="overflow-x-auto">
+            <table class="w-full bg-white shadow-md rounded overflow-hidden">
+                <tr class="bg-gray-200 text-left"><th class="p-3">Nombre</th><th class="p-3">Especie</th><th class="p-3">Edad</th><th class="p-3">Estado</th><th class="p-3">Acciones</th></tr>
+                <tr class="border-b">
+                    <td class="p-3 font-semibold">Firulais</td><td class="p-3">Perro</td><td class="p-3">1 año</td>
+                    <td class="p-3"><select onchange="document.getElementById('panel-aspirantes').classList.toggle('hidden', this.value !== 'proceso')" class="border rounded px-2 py-1 text-sm"><option>Disponible</option><option value="proceso">En Proceso</option><option>Adoptada</option></select></td>
+                    <td class="p-3 space-x-2 text-sm"><button class="text-indigo-600 underline">Editar</button><button class="text-red-600 underline">Eliminar</button></td>
+                </tr>
+                <tr id="panel-aspirantes" class="hidden bg-indigo-50">
+                    <td colspan="5" class="p-4">
+                        <p class="font-bold mb-2">Aspirantes en revisión (2)</p>
+                        <ul class="text-sm space-y-1 mb-3"><li>Diego Mendoza · 15/09/2026 · 300 123 4567</li><li>Ana Pérez · 16/09/2026 · 311 555 0000</li></ul>
+                        <p class="text-sm text-gray-600 mb-3">Si la mascota ya fue adoptada se muestra, en cambio: <strong>Fue adoptada por: Ana Pérez</strong></p>
+                        <button class="bg-indigo-600 text-white px-3 py-1 rounded text-sm">Confirmar cambio</button>
+                        <button class="ml-2 border px-3 py-1 rounded text-sm">Cancelar</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="p-3 font-semibold">Luna</td><td class="p-3">Gato</td><td class="p-3">2 años</td>
+                    <td class="p-3"><span class="bg-green-200 text-green-800 px-2 py-1 rounded text-xs font-bold">Adoptada</span></td>
+                    <td class="p-3 text-sm text-gray-600">Adoptada por: Ana Pérez</td>
+                </tr>
+            </table>
             </div>
+            <p class="text-sm text-gray-500 mt-3">El administrador ve este mismo inventario con las mascotas de todos los refugios.</p>
         </div>
 
         <!-- VISTA: ENCARGADO - PRODUCTOS -->
@@ -284,19 +383,39 @@
         </div>
 
         <!-- VISTA: ENCARGADO - SOLICITUDES -->
-        <div id="vista-encargado-solicitudes" class="vista">
+        <div id="vista-encargado-solicitudes" class="vista max-w-4xl mx-auto">
             <h2 class="text-2xl font-bold mb-6">Revisión de Solicitudes de Adopción</h2>
-            <table class="w-full bg-white shadow-md rounded overflow-hidden">
-                <tr class="bg-gray-200 text-left"><th class="p-3">Adoptante</th><th class="p-3">Mascota</th><th class="p-3">Acción</th></tr>
-                <tr>
-                    <td class="p-3">Diego Mendoza</td>
-                    <td class="p-3 font-semibold">Firulais</td>
-                    <td class="p-3 space-x-2">
-                        <button onclick="alert('Aprobada')" class="bg-green-500 text-white px-3 py-1 rounded text-sm">Aprobar</button>
-                        <button onclick="alert('Rechazada')" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Rechazar</button>
-                    </td>
-                </tr>
-            </table>
+
+            <div class="bg-white shadow-md rounded-lg p-5 mb-6">
+                <div class="flex justify-between items-start flex-wrap gap-2 mb-4">
+                    <div><p class="font-bold text-lg">Diego Mendoza quiere adoptar a Firulais</p><p class="text-sm text-gray-500">15/09/2026 · 28 años · 300 123 4567 · diego@correo.com · Calle 1 # 2-3</p></div>
+                    <span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded text-xs font-bold">En Revisión</span>
+                </div>
+                <div class="grid md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                    <p><strong>Vivienda:</strong> Arrendada</p>
+                    <p class="text-red-700 font-bold">El propietario NO permite animales</p>
+                    <p><strong>Patio o jardín:</strong> No</p><p><strong>Cercas de seguridad:</strong> No</p>
+                    <p><strong>Personas en el hogar:</strong> 3</p><p><strong>Animales previos:</strong> Sí (vacunados: Sí, esterilizados: No)</p>
+                    <p class="text-red-700 font-bold">Horas al día solo: 9</p><p><strong>Viajes o emergencias:</strong> Mi mamá</p>
+                    <p class="md:col-span-2"><strong>Motivo:</strong> Quiero compañía para mi hogar.</p>
+                </div>
+                <label class="block text-sm font-bold mt-4 mb-1">Comentario para el adoptante (opcional)</label>
+                <textarea rows="2" class="w-full px-3 py-2 border rounded-lg" placeholder="Este mensaje lo verá el adoptante en Mis Trámites"></textarea>
+                <div class="mt-3 space-x-2">
+                    <button onclick="alert('Aprobada: la mascota pasa a Adoptada y las demás solicitudes en revisión se rechazan solas')" class="bg-green-500 text-white px-4 py-2 rounded text-sm">Aprobar</button>
+                    <button onclick="alert('Rechazada con comentario')" class="bg-red-500 text-white px-4 py-2 rounded text-sm">Rechazar</button>
+                </div>
+            </div>
+
+            <div class="bg-white shadow-md rounded-lg p-5">
+                <div class="flex justify-between items-start flex-wrap gap-2">
+                    <p class="font-bold">Ana Pérez · Luna</p>
+                    <span class="bg-green-200 text-green-800 px-2 py-1 rounded text-xs font-bold">Aprobada</span>
+                </div>
+                <label class="block text-sm font-bold mt-3 mb-1">Comentario enviado (se puede corregir)</label>
+                <textarea rows="2" class="w-full px-3 py-2 border rounded-lg">Pasa a recogerla el lunes con tu cédula.</textarea>
+                <button onclick="alert('Comentario actualizado: el adoptante ya lo ve')" class="mt-3 bg-indigo-600 text-white px-4 py-2 rounded text-sm">Enviar comentario</button>
+            </div>
         </div>
 
         <!-- VISTA: ENCARGADO - VER SEGUIMIENTOS (Revisión de reportes enviados por los adoptantes) -->
@@ -330,7 +449,19 @@
                     <p class="text-3xl font-bold">892</p>
                 </div>
             </div>
-            <button onclick="alert('Exportando CSV...')" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900">⬇ Exportar Reporte (CSV)</button>
+            <button onclick="alert('Exportando CSV...')" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900">Exportar Reporte (CSV)</button>
+        </div>
+
+        <!-- VISTA: ADMIN - REFUGIOS -->
+        <div id="vista-admin-refugios" class="vista">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Gestión de Refugios</h2>
+                <button onclick="alert('Formulario para crear refugio (nombre, dirección, teléfono)')" class="bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700">+ Crear Refugio</button>
+            </div>
+            <table class="w-full bg-white shadow-md rounded overflow-hidden">
+                <tr class="bg-gray-200 text-left"><th class="p-3">Nombre</th><th class="p-3">Dirección</th><th class="p-3">Teléfono</th><th class="p-3">Acciones</th></tr>
+                <tr><td class="p-3 font-semibold">Refugio Central Sede Norte</td><td class="p-3">Av. 5 # 10-20</td><td class="p-3">601 555 0101</td><td class="p-3 space-x-2 text-sm"><button class="text-indigo-600 underline">Editar</button><button class="text-red-600 underline">Eliminar</button></td></tr>
+            </table>
         </div>
 
         <!-- VISTA: ADMIN - ENCARGADOS -->
@@ -340,7 +471,7 @@
                 <button onclick="alert('Crear encargado y asignar refugio_id')" class="bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700">+ Crear Encargado</button>
             </div>
             <div class="bg-white p-8 rounded text-center text-gray-500 border-2 border-dashed">
-                CRUD de Encargados (Exclusivo Admin).
+                CRUD de Encargados (Exclusivo Admin). La contraseña inicial exige mínimo 8 caracteres y tiene el botón para verla.
             </div>
         </div>
 
@@ -373,6 +504,11 @@
             if (nuevoRol === 'invitado' || nuevoRol === 'usuario') navegar('vista-home');
             if (nuevoRol === 'encargado') navegar('vista-encargado-mascotas');
             if (nuevoRol === 'admin') navegar('vista-admin-dashboard');
+        }
+
+        function verClave(boton) {
+            const campo = boton.parentElement.querySelector('input');
+            campo.type = campo.type === 'password' ? 'text' : 'password';
         }
 
         function navegar(idVista) {
