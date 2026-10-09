@@ -6,13 +6,13 @@
   <div class="filtros">
     <div class="campo">
       <label for="raza">Raza</label>
-      <input id="raza" type="search" placeholder="Ej: Labrador" [value]="raza()"
-             (input)="alEscribirRaza($any($event.target).value)">
+      <input #campoRaza id="raza" type="search" placeholder="Ej: Labrador" [value]="raza()"
+             (input)="alEscribirRaza(campoRaza.value)">
     </div>
 
     <div class="campo">
       <label for="especie">Especie</label>
-      <select id="especie" [value]="especie()" (change)="setEspecie($any($event.target).value)">
+      <select #campoEspecie id="especie" [value]="especie()" (change)="setEspecie(campoEspecie.value)">
         <option value="">Todas</option>
         <option value="Perro">Perros</option>
         <option value="Gato">Gatos</option>
@@ -22,7 +22,7 @@
 
     <div class="campo">
       <label for="edad">Edad</label>
-      <select id="edad" [value]="rangoEdad()" (change)="setEdad($any($event.target).value)">
+      <select #campoEdad id="edad" [value]="rangoEdad()" (change)="setEdad(campoEdad.value)">
         <option value="">Cualquiera</option>
         <option value="cachorro">Cachorro (menos de 1 año)</option>
         <option value="joven">Joven (1 a 2 años)</option>
@@ -33,7 +33,7 @@
 
     <div class="campo">
       <label for="orden">Ordenar por</label>
-      <select id="orden" [value]="orden()" (change)="setOrden($any($event.target).value)">
+      <select #campoOrden id="orden" [value]="orden()" (change)="setOrden(campoOrden.value)">
         <option value="recientes">Más recientes</option>
         <option value="nombre">Nombre (A-Z)</option>
         <option value="edad_asc">Edad: de menor a mayor</option>
@@ -42,12 +42,12 @@
     </div>
 
     <div class="campo check">
-      <input id="soloDisp" type="checkbox" [checked]="soloDisponibles()" (change)="setSoloDisponibles($any($event.target).checked)">
+      <input #campoSoloDisp id="soloDisp" type="checkbox" [checked]="soloDisponibles()" (change)="setSoloDisponibles(campoSoloDisp.checked)">
       <label for="soloDisp">Solo disponibles</label>
     </div>
 
     @if (hayFiltros()) {
-      <button type="button" class="limpiar" (click)="limpiar()">✖ Limpiar filtros</button>
+      <button type="button" class="limpiar con-icono" (click)="limpiar()"><ng-icon name="lucideX" size="14" /> Limpiar filtros</button>
     }
   </div>
 
@@ -62,13 +62,13 @@
           @if (mascota.imagen_url) {
             <img [src]="mascota.imagen_url" [alt]="'Foto de ' + mascota.nombre">
           } @else {
-            <span class="sin-foto">🐾</span>
+            <span class="sin-foto"><ng-icon name="lucidePawPrint" size="56" /></span>
           }
 
           @if (esAdoptada(mascota)) {
-            <span class="sello adoptado">❤️ ¡Adoptado!</span>
+            <span class="sello adoptado"><ng-icon name="lucideHeart" size="14" /> ¡Adoptado!</span>
           } @else if (enProceso(mascota)) {
-            <span class="sello proceso">⏳ En proceso</span>
+            <span class="sello proceso"><ng-icon name="lucideClock" size="14" /> En proceso</span>
           }
         </div>
 

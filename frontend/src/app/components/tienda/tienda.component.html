@@ -6,13 +6,13 @@
   <div class="filtros">
     <div class="campo">
       <label for="q">Buscar producto</label>
-      <input id="q" type="search" placeholder="Ej: Alimento" [value]="texto()"
-             (input)="alEscribir('texto', $any($event.target).value)">
+      <input #campoQ id="q" type="search" placeholder="Ej: Alimento" [value]="texto()"
+             (input)="alEscribir('texto', campoQ.value)">
     </div>
 
     <div class="campo">
       <label for="categoria">Categoría</label>
-      <select id="categoria" [value]="categoriaId()" (change)="setCategoria($any($event.target).value)">
+      <select #campoCategoria id="categoria" [value]="categoriaId()" (change)="setCategoria(campoCategoria.value)">
         <option value="">Todas</option>
         @for (c of categorias(); track c.id) {
           <option [value]="c.id">{{ c.nombre }}</option>
@@ -22,19 +22,19 @@
 
     <div class="campo">
       <label for="pmin">Precio mínimo ($)</label>
-      <input id="pmin" type="number" min="0" placeholder="0" [value]="precioMin()"
-             (input)="alEscribir('precioMin', $any($event.target).value)">
+      <input #campoPmin id="pmin" type="number" min="0" placeholder="0" [value]="precioMin()"
+             (input)="alEscribir('precioMin', campoPmin.value)">
     </div>
 
     <div class="campo">
       <label for="pmax">Precio máximo ($)</label>
-      <input id="pmax" type="number" min="0" placeholder="Sin límite" [value]="precioMax()"
-             (input)="alEscribir('precioMax', $any($event.target).value)">
+      <input #campoPmax id="pmax" type="number" min="0" placeholder="Sin límite" [value]="precioMax()"
+             (input)="alEscribir('precioMax', campoPmax.value)">
     </div>
 
     <div class="campo">
       <label for="orden">Ordenar por</label>
-      <select id="orden" [value]="orden()" (change)="setOrden($any($event.target).value)">
+      <select #campoOrden id="orden" [value]="orden()" (change)="setOrden(campoOrden.value)">
         <option value="recientes">Más recientes</option>
         <option value="precio_asc">Precio: de menor a mayor</option>
         <option value="precio_desc">Precio: de mayor a menor</option>
@@ -43,12 +43,12 @@
     </div>
 
     <div class="campo check">
-      <input id="stock" type="checkbox" [checked]="soloConStock()" (change)="setSoloConStock($any($event.target).checked)">
+      <input #campoStock id="stock" type="checkbox" [checked]="soloConStock()" (change)="setSoloConStock(campoStock.checked)">
       <label for="stock">Solo con stock</label>
     </div>
 
     @if (hayFiltros()) {
-      <button type="button" class="limpiar" (click)="limpiar()">✖ Limpiar filtros</button>
+      <button type="button" class="limpiar con-icono" (click)="limpiar()"><ng-icon name="lucideX" size="14" /> Limpiar filtros</button>
     }
   </div>
 
@@ -63,7 +63,7 @@
           @if (p.imagen_url) {
             <img [src]="p.imagen_url" [alt]="p.nombre" style="width: 100%; height: 100%; object-fit: contain;">
           } @else {
-            📦
+            <ng-icon name="lucidePackage" size="56" />
           }
         </div>
         <h3>{{ p.nombre }}</h3>
@@ -76,7 +76,7 @@
             {{ p.stock > 0 ? 'Añadir al Carrito' : 'Agotado' }}
           </button>
           <button class="btn-fav" (click)="agregarFavoritos(p)" [title]="carrito.esFavorito(p.id) ? 'Quitar de favoritos' : 'Añadir a favoritos'">
-            {{ carrito.esFavorito(p.id) ? '❤️' : '🤍' }}
+            <ng-icon name="lucideHeart" size="20" [style.fill]="carrito.esFavorito(p.id) ? '#e11d48' : 'none'" [style.color]="carrito.esFavorito(p.id) ? '#e11d48' : '#666'" />
           </button>
         </div>
       </div>

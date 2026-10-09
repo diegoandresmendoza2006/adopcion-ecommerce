@@ -4,24 +4,29 @@
       <h2>Gestión de Encargados de Refugio</h2>
       <p>Creación de cuentas y asignación de sedes (Exclusivo Admin)</p>
     </div>
-    <button class="btn-primary" (click)="crearEncargado()">{{ mostrarForm() ? 'Cancelar' : '+ Crear Encargado' }}</button>
+    <button class="btn-primary con-icono" (click)="crearEncargado()">
+      @if (mostrarForm()) { <ng-icon name="lucideX" size="16" /> Cancelar } @else { <ng-icon name="lucidePlus" size="16" /> Crear Encargado }
+    </button>
   </div>
 
   @if (ok()) { <p class="msg-ok">{{ ok() }}</p> }
   @if (error()) { <p class="msg-error">{{ error() }}</p> }
 
   @if (mostrarForm()) {
-    <form class="form-panel" (ngSubmit)="guardar()">
-      <div><label>Nombre completo</label><input [(ngModel)]="nuevo.nombre_completo" name="nombre_completo" required></div>
-      <div><label>Correo electrónico</label><input type="email" [(ngModel)]="nuevo.email" name="email" required></div>
-      <div><label>Contraseña (mín. 6)</label><input type="password" minlength="6" [(ngModel)]="nuevo.password" name="password" required></div>
-      <div><label>Sede / Refugio</label>
-        <select [(ngModel)]="nuevo.refugio_id" name="refugio_id" required>
+    <form #f="ngForm" class="form-panel" (ngSubmit)="guardar()">
+      <p class="leyenda full">Los campos con <span class="asterisco">*</span> son obligatorios</p>
+      <div><label for="enc-nombre" class="req">Nombre completo</label><input id="enc-nombre" [(ngModel)]="nuevo.nombre_completo" name="nombre_completo" required></div>
+      <div><label for="enc-correo" class="req">Correo electrónico</label><input id="enc-correo" type="email" [(ngModel)]="nuevo.email" name="email" required></div>
+      <div><label for="enc-clave" class="req">Contraseña (mín. 6)</label>
+        <app-campo-password inputId="enc-clave" name="password" [(ngModel)]="nuevo.password" autocomplete="new-password" minlength="6" required />
+      </div>
+      <div><label for="enc-refugio" class="req">Sede / Refugio</label>
+        <select id="enc-refugio" [(ngModel)]="nuevo.refugio_id" name="refugio_id" required>
           <option [ngValue]="null">-- Elige --</option>
           @for (r of refugios(); track r.id) { <option [ngValue]="r.id">{{ r.nombre }}</option> }
         </select>
       </div>
-      <div class="full"><button type="submit" [disabled]="enviando()">{{ enviando() ? 'Creando...' : 'Crear encargado' }}</button></div>
+      <div class="full"><button type="submit" [disabled]="enviando() || f.invalid">{{ enviando() ? 'Creando...' : 'Crear encargado' }}</button></div>
     </form>
   }
 

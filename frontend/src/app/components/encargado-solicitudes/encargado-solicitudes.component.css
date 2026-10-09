@@ -89,3 +89,52 @@
 .btn-rechazar:hover {
   background-color: #dc2626;
 }
+
+/* ---- Más ancho para mostrar el formulario completo ---- */
+.encargado-container { max-width: 1000px; }
+.table-box { overflow-x: auto; }
+
+/* ---- Botones con icono ---- */
+.btn-aprobar, .btn-rechazar, .btn-revisar, .btn-comentar { display: inline-flex; align-items: center; gap: 6px; }
+.btn-aprobar:disabled, .btn-rechazar:disabled, .btn-comentar:disabled { opacity: .6; cursor: not-allowed; }
+
+.btn-revisar {
+  background: #0d6efd; color: #fff; border: none; padding: 6px 12px;
+  border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold;
+}
+.btn-revisar:hover { background: #0b5ed7; }
+
+.btn-comentar {
+  background: #0d6efd; color: #fff; border: none; padding: 7px 14px;
+  border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold;
+}
+.btn-comentar:hover:not(:disabled) { background: #0b5ed7; }
+
+/* ---- Estado de la solicitud ---- */
+.badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: bold; }
+.badge.revision { background: #fff3cd; color: #8a5a00; }
+.badge.aprobada { background: #d1f5df; color: #146c43; }
+.badge.rechazada { background: #fde2e1; color: #b42318; }
+
+/* ---- Panel con el formulario del adoptante ---- */
+.panel-revision { background: #f8fafc; padding: 18px 22px !important; }
+.panel-revision h4 { margin: 0 0 12px; color: #2c3e50; }
+
+.bloques { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 14px; }
+.bloque { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; }
+.bloque h5 { margin: 0 0 8px; color: #1e7e34; font-size: 13px; }
+.bloque dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 0; }
+.bloque dt { color: #666; font-size: 13px; }
+.bloque dd { margin: 0; font-size: 13px; color: #222; overflow-wrap: anywhere; }
+.alerta-dato { color: #b42318 !important; font-weight: bold; }
+
+.motivo { margin-bottom: 14px; }
+.motivo p { margin: 6px 0 0; white-space: pre-wrap; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; }
+
+/* ---- Respuesta / comentario del encargado ---- */
+.respuesta { border-top: 1px solid #e2e8f0; padding-top: 12px; }
+.respuesta label { display: block; font-size: 13px; font-weight: bold; color: #444; margin-bottom: 4px; }
+.respuesta textarea { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; }
+.botones { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+.resuelta { margin: 0 0 8px; }
+.comentario-actual { background: #eef6ff; border-left: 3px solid #0d6efd; padding: 8px 12px; margin: 0 0 10px; font-size: 13px; }

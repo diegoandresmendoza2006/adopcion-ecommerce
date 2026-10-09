@@ -1,6 +1,6 @@
 <div class="encargado-container">
   <h2>Revisión de Solicitudes de Adopción</h2>
-  <p>Abre el formulario de cada solicitud, léelo y decide si la apruebas o la rechazas</p>
+  <p>Abre el formulario de cada solicitud, léelo y decide si la apruebas o la rechazas. Puedes dejarle un comentario al adoptante.</p>
 
   @if (ok()) { <p class="msg-ok">{{ ok() }}</p> }
   @if (error()) { <p class="msg-error">{{ error() }}</p> }
@@ -22,39 +22,115 @@
             <td>{{ s.adoptante_nombre }}</td>
             <td class="font-bold">{{ s.mascota_nombre }}</td>
             <td>{{ s.fecha_solicitud | date:'dd/MM/yyyy' }}</td>
-            <td>{{ s.estado }}</td>
+            <td><span class="badge" [class]="claseEstado(s.estado)">{{ s.estado }}</span></td>
             <td>
-              <button class="btn-aprobar" style="background: #0d6efd;" (click)="alternar(s.id)">
-                {{ abierta() === s.id ? 'Cerrar' : '📄 Revisar' }}
+              <button type="button" class="btn-revisar" (click)="alternar(s)">
+                @if (abierta() === s.id) {
+                  <ng-icon name="lucideX" size="15" /> Cerrar
+                } @else {
+                  <ng-icon name="lucideFileText" size="15" /> Revisar
+                }
               </button>
             </td>
           </tr>
 
           @if (abierta() === s.id) {
             <tr>
-              <td colspan="5" style="background: #f8fafc; padding: 18px 22px;">
-                <h4 style="margin: 0 0 12px 0; color: #2c3e50;">Formulario de adopción de {{ s.mascota_nombre }}</h4>
+              <td colspan="5" class="panel-revision">
+                <h4>Formulario de adopción de {{ s.mascota_nombre }}</h4>
 
                 @if (tieneFormulario(s)) {
-                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 14px;">
-                    <div><strong>Nombre:</strong><br>{{ s.nombre_contacto || '—' }}</div>
-                    <div><strong>Teléfono:</strong><br>{{ s.telefono || '—' }}</div>
-                    <div><strong>Tipo de vivienda:</strong><br>{{ s.tipo_vivienda || '—' }}</div>
+                  <div class="bloques">
+                    <section class="bloque">
+                      <h5>Datos personales</h5>
+                      <dl>
+                        <dt>Nombre</dt><dd>{{ s.nombre_contacto || '—' }}</dd>
+                        <dt>Nacimiento</dt>
+                        <dd>
+                          {{ s.fecha_nacimiento ? (s.fecha_nacimiento | date:'dd/MM/yyyy') : '—' }}
+                          @if (edadDesde(s.fecha_nacimiento) !== null) { ({{ edadDesde(s.fecha_nacimiento) }} años) }
+                        </dd>
+                        <dt>Teléfono</dt><dd>{{ s.telefono || '—' }}</dd>
+                        <dt>Correo</dt><dd>{{ s.email_contacto || '—' }}</dd>
+                        <dt>Dirección</dt><dd>{{ s.direccion || '—' }}</dd>
+                      </dl>
+                    </section>
+
+                    <section class="bloque">
+                      <h5>Vivienda, entorno y espacio</h5>
+                      <dl>
+                        <dt>Vivienda</dt><dd>{{ s.tipo_vivienda || '—' }}</dd>
+                        <dt>Permite animales</dt>
+                        <dd [class.alerta-dato]="viviendaNoPermite(s)">{{ siNo(s.vivienda_permite_mascotas) }}</dd>
+                        <dt>Patio o jardín</dt><dd>{{ siNo(s.tiene_patio) }}</dd>
+                        <dt>Cercas de seguridad</dt><dd>{{ siNo(s.tiene_cercas) }}</dd>
+                        <dt>Personas en el hogar</dt><dd>{{ s.personas_hogar ?? '—' }}</dd>
+                      </dl>
+                    </section>
+
+                    <section class="bloque">
+                      <h5>Experiencia previa</h5>
+                      <dl>
+                        <dt>Otros animales</dt><dd>{{ siNo(s.tuvo_mascotas) }}</dd>
+                        @if (s.tuvo_mascotas) {
+                          <dt>Vacunados</dt><dd>{{ siNo(s.mascotas_vacunadas) }}</dd>
+                          <dt>Esterilizados</dt><dd>{{ siNo(s.mascotas_esterilizadas) }}</dd>
+                        }
+                      </dl>
+                    </section>
+
+                    <section class="bloque">
+                      <h5>Disponibilidad y estilo de vida</h5>
+                      <dl>
+                        <dt>Horas solo al día</dt>
+                        <dd [class.alerta-dato]="muchasHorasSolo(s)">{{ s.horas_solo ?? '—' }}</dd>
+                        <dt>Viajes o emergencias</dt><dd>{{ s.responsable_viajes || '—' }}</dd>
+                      </dl>
+                    </section>
                   </div>
-                  <div style="margin-bottom: 16px;">
-                    <strong>¿Por qué desea adoptar?</strong>
-                    <p style="margin: 6px 0 0 0; white-space: pre-wrap; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px;">{{ s.motivo || '—' }}</p>
-                  </div>
+
+                  @if (s.motivo) {
+                    <div class="motivo">
+                      <strong>¿Por qué desea adoptar?</strong>
+                      <p>{{ s.motivo }}</p>
+                    </div>
+                  }
                 } @else {
-                  <p class="msg-vacio">Esta solicitud se envió antes de que existiera el formulario, por eso no tiene datos.</p>
+                  <p class="msg-vacio">Esta solicitud se envió antes de que existiera el formulario completo, por eso no tiene todos los datos.</p>
                 }
 
-                @if (s.estado === 'En Revisión') {
-                  <button class="btn-aprobar" (click)="aprobar(s)">✔ Aprobar adopción</button>
-                  <button class="btn-rechazar" (click)="rechazar(s)">✖ Rechazar</button>
-                } @else {
-                  <p style="margin: 0;"><strong>Esta solicitud ya fue resuelta: {{ s.estado }}.</strong></p>
-                }
+                <!-- Respuesta del encargado -->
+                <div class="respuesta">
+                  @if (s.estado === 'En Revisión') {
+                    <label for="comentario-{{ s.id }}">Comentario para el adoptante (opcional)</label>
+                    <textarea id="comentario-{{ s.id }}" rows="2" maxlength="500" [(ngModel)]="comentario" name="comentario"
+                              placeholder="Ej: Pasa por el refugio el lunes con tu documento / Tu vivienda no permite animales"></textarea>
+                    <div class="botones">
+                      <button type="button" class="btn-aprobar" [disabled]="enviando()" (click)="aprobar(s)">
+                        <ng-icon name="lucideCheck" size="16" /> Aprobar adopción
+                      </button>
+                      <button type="button" class="btn-rechazar" [disabled]="enviando()" (click)="rechazar(s)">
+                        <ng-icon name="lucideX" size="16" /> Rechazar
+                      </button>
+                    </div>
+                  } @else {
+                    <p class="resuelta"><strong>Esta solicitud ya fue resuelta: {{ s.estado }}.</strong></p>
+                    @if (s.comentario_encargado) {
+                      <p class="comentario-actual">
+                        <strong>Comentario enviado</strong> ({{ s.fecha_respuesta | date:'dd/MM/yyyy HH:mm' }}):
+                        {{ s.comentario_encargado }}
+                      </p>
+                    }
+                    <label for="comentario-{{ s.id }}">{{ s.comentario_encargado ? 'Corregir comentario' : 'Enviar un comentario al adoptante' }}</label>
+                    <textarea id="comentario-{{ s.id }}" rows="2" maxlength="500" [(ngModel)]="comentario" name="comentario"
+                              placeholder="Escribe el mensaje que verá el adoptante"></textarea>
+                    <div class="botones">
+                      <button type="button" class="btn-comentar" [disabled]="enviando()" (click)="enviarComentario(s)">
+                        <ng-icon name="lucideMessageSquare" size="16" /> Enviar comentario
+                      </button>
+                    </div>
+                  }
+                </div>
               </td>
             </tr>
           }

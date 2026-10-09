@@ -1,47 +1,153 @@
 <div class="solicitud-container">
   <div class="solicitud-card">
     <h2>Formulario de Adopción</h2>
-    <p>Estás a un paso de darle un hogar a una mascota</p>
+    <p class="intro">Estás a un paso de darle un hogar a una mascota. Cuéntanos sobre ti para que el refugio pueda evaluar tu solicitud.</p>
 
     @if (mascota(); as m) {
-      <p><strong>Mascota seleccionada: {{ m.nombre }}</strong> ({{ m.especie }})</p>
+      <p class="mascota-elegida"><strong>Mascota seleccionada: {{ m.nombre }}</strong> ({{ m.especie }})</p>
     }
     @if (error()) { <p class="msg-error">{{ error() }}</p> }
     @if (ok()) { <p class="msg-ok">{{ ok() }}</p> }
 
-    <form (ngSubmit)="enviarSolicitud()">
-      <div class="form-group">
-        <label for="nombreCompleto">Nombre Completo:</label>
-        <input type="text" id="nombreCompleto" name="nombre_contacto" [(ngModel)]="datos.nombre_contacto"
-               placeholder="Tu nombre y apellido" maxlength="150" required>
-      </div>
+    <p class="leyenda-obligatorio">Los campos con <span class="asterisco">*</span> son obligatorios</p>
 
-      <div class="form-group">
-        <label for="telefono">Teléfono de Contacto:</label>
-        <input type="tel" id="telefono" name="telefono" [(ngModel)]="datos.telefono"
-               placeholder="3001234567" maxlength="30" required>
-      </div>
+    <form #f="ngForm" (ngSubmit)="enviarSolicitud()">
 
-      <div class="form-group">
-        <label for="vivienda">Tipo de Vivienda:</label>
-        <select id="vivienda" name="tipo_vivienda" [(ngModel)]="datos.tipo_vivienda">
-          <option value="Casa propia">Casa propia</option>
-          <option value="Casa alquilada">Casa alquilada</option>
-          <option value="Apartamento">Apartamento</option>
-        </select>
-      </div>
+      <!-- 1. Datos personales -->
+      <fieldset>
+        <legend>1. Datos personales</legend>
+        <div class="fila">
+          <div class="form-group">
+            <label for="nombreCompleto" class="req">Nombre completo</label>
+            <input type="text" id="nombreCompleto" name="nombre_contacto" [(ngModel)]="datos.nombre_contacto"
+                   placeholder="Tu nombre y apellido" minlength="3" maxlength="150" required>
+          </div>
+          <div class="form-group">
+            <label for="nacimiento" class="req">Fecha de nacimiento</label>
+            <input type="date" id="nacimiento" name="fecha_nacimiento" [(ngModel)]="datos.fecha_nacimiento"
+                   min="1900-01-01" [max]="maxNacimiento" required>
+            @if (esMenor()) { <small class="campo-error">Debes ser mayor de 18 años para adoptar.</small> }
+          </div>
+        </div>
+        <div class="fila">
+          <div class="form-group">
+            <label for="telefono" class="req">Teléfono</label>
+            <input type="tel" id="telefono" name="telefono" [(ngModel)]="datos.telefono"
+                   placeholder="3001234567" minlength="7" maxlength="30" required>
+          </div>
+          <div class="form-group">
+            <label for="correoContacto" class="req">Correo electrónico</label>
+            <input type="email" id="correoContacto" name="email_contacto" [(ngModel)]="datos.email_contacto"
+                   placeholder="tucorreo@ejemplo.com" maxlength="100" required email>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="direccion" class="req">Dirección</label>
+          <input type="text" id="direccion" name="direccion" [(ngModel)]="datos.direccion"
+                 placeholder="Calle, número, barrio y ciudad" minlength="5" maxlength="255" required>
+        </div>
+      </fieldset>
 
-      <div class="form-group">
-        <label for="motivo">¿Por qué deseas adoptar?</label>
-        <textarea id="motivo" name="motivo" rows="3" [(ngModel)]="datos.motivo" maxlength="1000"
-                  placeholder="Cuéntanos un poco sobre tu motivación..." required></textarea>
-      </div>
+      <!-- 2. Tipo de vivienda -->
+      <fieldset>
+        <legend>2. Tipo de vivienda</legend>
+        <div class="form-group">
+          <label for="vivienda" class="req">La vivienda donde vivirá es</label>
+          <select id="vivienda" name="tipo_vivienda" [(ngModel)]="datos.tipo_vivienda" required>
+            <option value="">-- Elige --</option>
+            <option value="Propia">Propia</option>
+            <option value="Arrendada">Arrendada</option>
+          </select>
+        </div>
+        <div class="form-group pregunta">
+          <span class="etiqueta req">¿El propietario o el reglamento permite tener animales?</span>
+          <div class="opciones">
+            <label><input type="radio" name="vivienda_permite_mascotas" [value]="true" [(ngModel)]="datos.vivienda_permite_mascotas" required> Sí</label>
+            <label><input type="radio" name="vivienda_permite_mascotas" [value]="false" [(ngModel)]="datos.vivienda_permite_mascotas" required> No</label>
+          </div>
+        </div>
+      </fieldset>
 
-      <button type="submit" class="btn-enviar" [disabled]="!mascota() || enviando()">{{ enviando() ? 'Enviando...' : 'Enviar Solicitud' }}</button>
+      <!-- 3. Entorno y espacio -->
+      <fieldset>
+        <legend>3. Entorno y espacio</legend>
+        <div class="form-group pregunta">
+          <span class="etiqueta req">¿Cuenta con patio o jardín?</span>
+          <div class="opciones">
+            <label><input type="radio" name="tiene_patio" [value]="true" [(ngModel)]="datos.tiene_patio" required> Sí</label>
+            <label><input type="radio" name="tiene_patio" [value]="false" [(ngModel)]="datos.tiene_patio" required> No</label>
+          </div>
+        </div>
+        <div class="form-group pregunta">
+          <span class="etiqueta req">¿Tiene cercas de seguridad?</span>
+          <div class="opciones">
+            <label><input type="radio" name="tiene_cercas" [value]="true" [(ngModel)]="datos.tiene_cercas" required> Sí</label>
+            <label><input type="radio" name="tiene_cercas" [value]="false" [(ngModel)]="datos.tiene_cercas" required> No</label>
+          </div>
+        </div>
+        <div class="form-group corto">
+          <label for="personas" class="req">¿Cuántas personas conforman el núcleo familiar?</label>
+          <input type="number" id="personas" name="personas_hogar" [(ngModel)]="datos.personas_hogar" min="1" max="30" required>
+        </div>
+      </fieldset>
+
+      <!-- 4. Experiencia previa -->
+      <fieldset>
+        <legend>4. Experiencia previa</legend>
+        <div class="form-group pregunta">
+          <span class="etiqueta req">¿Tiene o ha tenido otros animales de compañía?</span>
+          <div class="opciones">
+            <label><input type="radio" name="tuvo_mascotas" [value]="true" [(ngModel)]="datos.tuvo_mascotas" required> Sí</label>
+            <label><input type="radio" name="tuvo_mascotas" [value]="false" [(ngModel)]="datos.tuvo_mascotas" required> No</label>
+          </div>
+        </div>
+        @if (datos.tuvo_mascotas) {
+          <div class="form-group pregunta">
+            <span class="etiqueta req">¿Estaban vacunados?</span>
+            <div class="opciones">
+              <label><input type="radio" name="mascotas_vacunadas" [value]="true" [(ngModel)]="datos.mascotas_vacunadas" required> Sí</label>
+              <label><input type="radio" name="mascotas_vacunadas" [value]="false" [(ngModel)]="datos.mascotas_vacunadas" required> No</label>
+            </div>
+          </div>
+          <div class="form-group pregunta">
+            <span class="etiqueta req">¿Estaban esterilizados?</span>
+            <div class="opciones">
+              <label><input type="radio" name="mascotas_esterilizadas" [value]="true" [(ngModel)]="datos.mascotas_esterilizadas" required> Sí</label>
+              <label><input type="radio" name="mascotas_esterilizadas" [value]="false" [(ngModel)]="datos.mascotas_esterilizadas" required> No</label>
+            </div>
+          </div>
+        }
+      </fieldset>
+
+      <!-- 5. Disponibilidad y estilo de vida -->
+      <fieldset>
+        <legend>5. Disponibilidad y estilo de vida</legend>
+        <div class="form-group corto">
+          <label for="horas" class="req">¿Cuántas horas al día estará solo el animal?</label>
+          <input type="number" id="horas" name="horas_solo" [(ngModel)]="datos.horas_solo" min="0" max="24" required>
+        </div>
+        <div class="form-group">
+          <label for="viajes" class="req">¿Quién se hará cargo en caso de viajes o emergencias?</label>
+          <textarea id="viajes" name="responsable_viajes" rows="2" [(ngModel)]="datos.responsable_viajes"
+                    minlength="3" maxlength="500" placeholder="Nombre y parentesco de la persona" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="motivo">¿Por qué deseas adoptar? (opcional)</label>
+          <textarea id="motivo" name="motivo" rows="3" [(ngModel)]="datos.motivo" maxlength="1000"
+                    placeholder="Cuéntanos un poco sobre tu motivación..."></textarea>
+        </div>
+      </fieldset>
+
+      <button type="submit" class="btn-enviar" [disabled]="!mascota() || enviando() || f.invalid || esMenor()">
+        {{ enviando() ? 'Enviando...' : 'Enviar Solicitud' }}
+      </button>
+      @if (f.invalid && !enviando()) {
+        <p class="pendiente">Completa todos los campos con <span class="asterisco">*</span> para poder enviar.</p>
+      }
     </form>
 
     <div class="link-volver">
-      <a routerLink="/catalogo">← Volver al catálogo</a>
+      <a routerLink="/catalogo" class="con-icono"><ng-icon name="lucideArrowLeft" size="14" /> Volver al catálogo</a>
     </div>
   </div>
 </div>

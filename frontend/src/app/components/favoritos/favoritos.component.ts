@@ -1,12 +1,13 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { CarritoService } from '../../services/carrito.service';
+import { NgIcon } from '@ng-icons/core';
+import { CarritoService, ItemFavorito } from '../../services/carrito.service';
 
 @Component({
   selector: 'app-favoritos',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, NgIcon],
   templateUrl: './favoritos.component.html',
   styleUrls: ['./favoritos.component.css']
 })
@@ -15,7 +16,7 @@ export class FavoritosComponent {
 
   constructor(public carrito: CarritoService) {}
 
-  moverAlCarrito(item: any) {
+  moverAlCarrito(item: ItemFavorito) {
     const problema = this.carrito.agregar(item);
     if (problema) {
       this.aviso.set(problema);

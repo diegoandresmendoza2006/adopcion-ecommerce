@@ -91,3 +91,40 @@
   color: #888;
   font-size: 13px;
 }
+
+/* ---- Más ancho y mensajes del refugio ---- */
+.solicitudes-container { max-width: 1000px; }
+.table-box { overflow-x: auto; }
+
+.badge.rechazada {
+  background-color: #fde2e1;
+  color: #b42318;
+}
+
+.mensaje {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  background: #eef6ff;
+  border-left: 3px solid #0d6efd;
+  padding: 8px 10px;
+  border-radius: 4px;
+  max-width: 320px;
+}
+
+.mensaje p { margin: 0 0 2px; font-size: 13px; color: #222; overflow-wrap: anywhere; }
+.mensaje small { color: #666; font-size: 11px; }
+
+.btn-cert {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+}

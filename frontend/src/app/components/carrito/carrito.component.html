@@ -11,14 +11,14 @@
       @for (item of carrito.items(); track item.producto_id) {
         <div class="item-carrito">
           <div class="info-item">
-            <div class="img-mini">📦</div>
+            <div class="img-mini"><ng-icon name="lucidePackage" size="26" /></div>
             <div>
               <h4>{{ item.nombre }}</h4>
               <p class="cant">
                 <button (click)="carrito.cambiarCantidad(item.producto_id, -1)">−</button>
                 Cantidad: {{ item.cantidad }}
                 <button (click)="carrito.cambiarCantidad(item.producto_id, 1)" [disabled]="item.cantidad >= item.stock">+</button>
-                <button (click)="carrito.quitar(item.producto_id)" title="Quitar">🗑️</button>
+                <button (click)="carrito.quitar(item.producto_id)" title="Quitar" aria-label="Quitar del carrito"><ng-icon name="lucideTrash2" size="15" /></button>
               </p>
             </div>
           </div>

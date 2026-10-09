@@ -1,6 +1,6 @@
 <div class="solicitudes-container">
   <h2>Mis Trámites de Adopción</h2>
-  <p>Consulta el estado de tus solicitudes y descarga tus certificados</p>
+  <p>Consulta el estado de tus solicitudes, lee los mensajes del refugio y descarga tus certificados</p>
 
   @if (cargando()) { <p class="msg-vacio">Cargando...</p> }
   @if (error()) { <p class="msg-error">{{ error() }}</p> }
@@ -12,6 +12,7 @@
           <th>Mascota</th>
           <th>Fecha</th>
           <th>Estado</th>
+          <th>Mensaje del refugio</th>
           <th>Acción del Usuario</th>
         </tr>
       </thead>
@@ -21,13 +22,28 @@
             <td class="font-bold">{{ s.mascota_nombre }}</td>
             <td>{{ s.fecha_solicitud | date:'dd/MM/yyyy' }}</td>
             <td>
-              <span class="badge" [class.revision]="s.estado === 'En Revisión'" [class.aprobada]="s.estado === 'Aprobada'">
+              <span class="badge" [class.revision]="s.estado === 'En Revisión'" [class.aprobada]="s.estado === 'Aprobada'" [class.rechazada]="s.estado === 'Rechazada'">
                 {{ s.estado }}
               </span>
             </td>
             <td>
+              @if (s.comentario_encargado) {
+                <div class="mensaje">
+                  <ng-icon name="lucideMessageSquare" size="15" />
+                  <div>
+                    <p>{{ s.comentario_encargado }}</p>
+                    <small>{{ s.fecha_respuesta | date:'dd/MM/yyyy HH:mm' }}</small>
+                  </div>
+                </div>
+              } @else {
+                <span class="text-muted">Sin mensajes</span>
+              }
+            </td>
+            <td>
               @if (s.estado === 'Aprobada') {
-                <button class="btn-cert" (click)="descargarCertificado(s)">📄 Certificado (imprimir / guardar PDF)</button>
+                <button class="btn-cert" (click)="descargarCertificado(s)">
+                  <ng-icon name="lucideFileText" size="15" /> Certificado
+                </button>
               } @else {
                 <span class="text-muted">Sin acciones pendientes</span>
               }

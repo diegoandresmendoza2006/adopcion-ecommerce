@@ -1,34 +1,37 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { NgIcon } from '@ng-icons/core';
 import { ApiService } from '../../services/api.service';
+import { Encargado, EncargadoNuevo, Refugio } from '../../models/modelos';
+import { CampoPasswordComponent } from '../campo-password/campo-password.component';
 
 @Component({
   selector: 'app-admin-encargados',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NgIcon, CampoPasswordComponent],
   templateUrl: './admin-encargados.component.html',
   styleUrls: ['./admin-encargados.component.css']
 })
 export class AdminEncargadosComponent implements OnInit {
-  encargados = signal<any[]>([]);
-  refugios = signal<any[]>([]);
+  encargados = signal<Encargado[]>([]);
+  refugios = signal<Refugio[]>([]);
   mostrarForm = signal(false);
   enviando = signal(false);
   error = signal('');
   ok = signal('');
 
-  nuevo: any = { nombre_completo: '', email: '', password: '', refugio_id: null };
+  nuevo: EncargadoNuevo = { nombre_completo: '', email: '', password: '', refugio_id: null };
 
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
     this.cargar();
-    this.api.get<any[]>('/refugios/').subscribe(r => this.refugios.set(r));
+    this.api.get<Refugio[]>('/refugios/').subscribe(r => this.refugios.set(r));
   }
 
   cargar(): void {
-    this.api.get<any[]>('/admin/encargados').subscribe({
+    this.api.get<Encargado[]>('/admin/encargados').subscribe({
       next: (data) => this.encargados.set(data),
       error: (err) => this.error.set(this.api.mensajeError(err))
     });
