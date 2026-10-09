@@ -20,7 +20,7 @@
       <div class="form-group">
         <label for="clave" class="req">Contraseña</label>
         <app-campo-password inputId="clave" name="password" [(ngModel)]="usuario.password"
-                            placeholder="Mínimo 6 caracteres" autocomplete="new-password" required minlength="6" />
+                            placeholder="Mínimo 8 caracteres" autocomplete="new-password" required minlength="8"/>
       </div>
 
       @if (errorMessage()) { <div class="alerta error">{{ errorMessage() }}</div> }

@@ -57,7 +57,8 @@ def _solicitud_del_personal(db: Session, solicitud_id: int, usuario: models.Usua
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.SolicitudAdopcionOut)
 def crear_solicitud(solicitud: schemas.SolicitudAdopcionCreate, db: Session = Depends(database.get_db),
-                    usuario: models.Usuario = Depends(security.get_current_user)):
+                    usuario: models.Usuario = Depends(security.require_usuario)):
+
     mascota = db.query(models.Mascota).filter(models.Mascota.id == solicitud.mascota_id).first()
     if not mascota:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="La mascota no existe")

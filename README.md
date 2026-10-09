@@ -54,6 +54,13 @@ Crea `backend/.env`:
 DATABASE_URL=postgresql+psycopg://usuario_adopcion:tu_clave@localhost:5432/adopcion_ecommerce
 SECRET_KEY=una-clave-larga-y-aleatoria
 ```
+Genera una `SECRET_KEY` con:
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
+Es **obligatoria** (mínimo 16 caracteres): si falta, el backend no arranca. La contraseña de los usuarios exige mínimo 8 caracteres.
+
+
 Arranca:
 ```bash
 uvicorn app.main:app --reload
@@ -115,9 +122,20 @@ marcan con `*` en el formulario.
 - El encargado puede dejar un comentario al aprobar o rechazar, y corregirlo después; el adoptante lo ve en "Trámites".
 - Al cambiar el estado de una mascota a "Adoptada" o "En proceso", el encargado ve quién la adoptó o la lista de aspirantes.
 
+## Pruebas
+Las pruebas del backend usan una base SQLite temporal, no tocan tu PostgreSQL:
+```bash
+cd backend
+pip install -r requirements-dev.txt
+pytest -v
+```
+Cubren autenticación, roles, mascotas (incluido el límite de 240 meses), formulario de adopción, comentarios del encargado, aspirantes y compras.
+
+
 ## Estructura
 ```
 backend/app/        main.py, models.py, schemas.py, security.py, routers/
+backend/tests/      pruebas con pytest
 backend/migrations/ cambios de base de datos sobre schema.sql
 frontend/src/app/   components/, services/, models/, guards/, iconos.ts, app.routes.ts
 docs/               base-de-datos.md, paginacion.md, mockups/
