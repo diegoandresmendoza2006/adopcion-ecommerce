@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict ZtcDVUdnhHLkpykL914OF6JvPTbU0roGSliLKV58HZjtCXYBgcWYQ4fenSRJuQF
+\restrict XNN4bkMgoivfHdD9t3XICiFxF36zN12c6QbKoNgdFhgZ8SQfcIPprss1W4Q8syg
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -1258,5 +1258,5 @@ GRANT ALL ON SEQUENCE adopcion.usuarios_id_seq TO usuario_adopcion;
 -- PostgreSQL database dump complete
 --
 
-\unrestrict ZtcDVUdnhHLkpykL914OF6JvPTbU0roGSliLKV58HZjtCXYBgcWYQ4fenSRJuQF
+\unrestrict XNN4bkMgoivfHdD9t3XICiFxF36zN12c6QbKoNgdFhgZ8SQfcIPprss1W4Q8syg
 
