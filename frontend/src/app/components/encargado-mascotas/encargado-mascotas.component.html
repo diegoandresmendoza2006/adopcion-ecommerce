@@ -23,7 +23,7 @@
         </select>
       </div>
       <div><label for="campo-raza">Raza</label><input id="campo-raza" [(ngModel)]="nueva.raza" name="raza"></div>
-      <div><label for="campo-edad" class="req">Edad (en meses)</label><input id="campo-edad" type="number" min="0" [(ngModel)]="nueva.edad_meses" name="edad_meses" required></div>
+      <div><label for="campo-edad" class="req">Edad (en meses)</label><input id="campo-edad" type="number" min="0" max="240" [(ngModel)]="nueva.edad_meses" name="edad_meses" required></div>
       @if (editandoId() !== null) {
         <div><label for="campo-estado" class="req">Estado</label>
           <select id="campo-estado" [(ngModel)]="nueva.estado_adopcion" name="estado_adopcion" required>

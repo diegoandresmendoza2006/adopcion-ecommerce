@@ -62,7 +62,7 @@ class MascotaCreate(BaseModel):
     nombre: str
     especie: str
     raza: Optional[str] = None
-    edad_meses: Optional[int] = None
+    edad_meses: Optional[int] = Field(None, ge=0, le=240)   # máximo 240 meses (20 años)
     descripcion: Optional[str] = None
     estado_adopcion: str = "Disponible"
     refugio_id: int
@@ -344,7 +344,7 @@ class MascotaPut(BaseModel):
     nombre: str = Field(min_length=1, max_length=100)
     especie: str = Field(min_length=1, max_length=50)
     raza: Optional[str] = Field(None, max_length=50)
-    edad_meses: Optional[int] = Field(None, ge=0, le=600)
+    edad_meses: Optional[int] = Field(None, ge=0, le=240)
     descripcion: Optional[str] = None
     estado_adopcion: EstadoMascota = "Disponible"
     refugio_id: Optional[int] = None      # solo lo respeta el administrador
@@ -355,7 +355,7 @@ class MascotaUpdate(BaseModel):
     nombre: Optional[str] = Field(None, min_length=1, max_length=100)
     especie: Optional[str] = Field(None, min_length=1, max_length=50)
     raza: Optional[str] = Field(None, max_length=50)
-    edad_meses: Optional[int] = Field(None, ge=0, le=600)
+    edad_meses: Optional[int] = Field(None, ge=0, le=240)
     descripcion: Optional[str] = None
     estado_adopcion: Optional[EstadoMascota] = None
     refugio_id: Optional[int] = None
