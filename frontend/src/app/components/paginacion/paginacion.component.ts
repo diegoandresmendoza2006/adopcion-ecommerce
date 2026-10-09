@@ -1,12 +1,13 @@
 import { Component, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgIcon } from '@ng-icons/core';
 
 // Barra de páginas reutilizable (catálogo y tienda).
 // Uso: <app-paginacion [pagina]="pagina()" [paginas]="paginas()" [total]="total()" [porPagina]="12" (cambiar)="irAPagina($event)">
 @Component({
   selector: 'app-paginacion',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NgIcon],
   template: `
     @if (total() > 0) {
       <div class="pag">
@@ -14,7 +15,7 @@ import { CommonModule } from '@angular/common';
 
         @if (paginas() > 1) {
           <nav aria-label="Páginas">
-            <button type="button" (click)="ir(pagina() - 1)" [disabled]="pagina() <= 1">‹ Anterior</button>
+            <button type="button" (click)="ir(pagina() - 1)" [disabled]="pagina() <= 1" class="flecha"><ng-icon name="lucideChevronLeft" size="16" /> Anterior</button>
             @for (n of numeros(); track $index) {
               @if (n === 0) {
                 <span class="puntos">…</span>
@@ -22,7 +23,7 @@ import { CommonModule } from '@angular/common';
                 <button type="button" [class.actual]="n === pagina()" [attr.aria-current]="n === pagina() ? 'page' : null" (click)="ir(n)">{{ n }}</button>
               }
             }
-            <button type="button" (click)="ir(pagina() + 1)" [disabled]="pagina() >= paginas()">Siguiente ›</button>
+            <button type="button" (click)="ir(pagina() + 1)" [disabled]="pagina() >= paginas()" class="flecha">Siguiente <ng-icon name="lucideChevronRight" size="16" /></button>
           </nav>
         }
       </div>
@@ -37,6 +38,7 @@ import { CommonModule } from '@angular/common';
     button:hover:not(:disabled):not(.actual) { background: #f1f5f9; }
     button.actual { background: #28a745; border-color: #28a745; color: #fff; font-weight: bold; cursor: default; }
     button:disabled { opacity: .45; cursor: not-allowed; }
+    .flecha { display: inline-flex; align-items: center; gap: 4px; }
     .puntos { align-self: center; color: #94a3b8; padding: 0 4px; }
   `]
 })
