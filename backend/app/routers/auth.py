@@ -14,12 +14,7 @@ def registrar_usuario(usuario: schemas.UsuarioCreate, db: Session = Depends(get_
     # 1. Verificar si el correo ya existe
     usuario_existente = db.query(models.Usuario).filter(models.Usuario.email == usuario.email).first()
     if usuario_existente:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Credenciales incorrectas",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El correo ya está registrado")
 
     # 2. Encriptar la contraseña
     hashed_pwd = security.hash_password(usuario.password)
@@ -43,7 +38,11 @@ def registrar_usuario(usuario: schemas.UsuarioCreate, db: Session = Depends(get_
 def login(credenciales: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     usuario = db.query(models.Usuario).filter(models.Usuario.email == credenciales.username).first()
     if not usuario or not security.verify_password(credenciales.password, usuario.password_hash):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Credenciales incorrectas")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales incorrectas",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     access_token = security.create_access_token(data={"usuario_id": usuario.id, "rol_id": usuario.rol_id})
     return {"access_token": access_token, "token_type": "bearer"}
