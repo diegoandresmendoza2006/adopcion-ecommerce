@@ -109,7 +109,20 @@
   text-decoration: none;
   font-size: 14px;
   font-weight: bold;
+  cursor: pointer; 
+  transition: transform 0.2s ease-in-out, background 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
 .btn-detalle { border: 1px solid #007bff; color: #007bff; }
 .btn-adoptar { background: #28a745; color: #fff; }
+
+.btn-detalle:hover{
+  background:rgb(48, 208, 211);
+  color: #fff;
+  transform: scale(1.05);
+}
+.btn-adoptar:hover{
+  background:rgb(137, 232, 65);
+  color: #1b4d2b;
+  transform: scale(1.05);
+}
