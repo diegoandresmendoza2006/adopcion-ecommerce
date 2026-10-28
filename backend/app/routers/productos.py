@@ -7,6 +7,7 @@ from .. import schemas
 from .. import database
 from .. import models
 from .. import security
+from .. import imagenes
 
 router = APIRouter(prefix="/productos", tags=["E-commerce - Productos"])
 
@@ -109,6 +110,7 @@ def _guardar_producto(db: Session, producto: models.Producto, cambios: dict) -> 
             cambios.pop("categoria_id")
         elif not db.query(models.CategoriaProducto).filter(models.CategoriaProducto.id == cambios["categoria_id"]).first():
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="La categoría no existe")
+    foto_vieja = producto.imagen_url
     for campo, valor in cambios.items():
         setattr(producto, campo, valor)
     try:
@@ -117,6 +119,8 @@ def _guardar_producto(db: Session, producto: models.Producto, cambios: dict) -> 
         db.rollback()
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Los datos no cumplen las reglas de la base de datos")
     db.refresh(producto)
+    if "imagen_url" in cambios and foto_vieja and foto_vieja != producto.imagen_url:
+        imagenes.limpiar(db, foto_vieja)
     return producto
 
 
@@ -149,9 +153,11 @@ def eliminar_producto(producto_id: int, db: Session = Depends(database.get_db),
                             detail="No se puede eliminar: ya forma parte de pedidos. Ponle stock 0 para que aparezca como agotado")
     # Lo que sí se limpia: carritos y favoritos de usuarios que lo tenían guardado
     db.query(models.SeleccionProducto).filter(models.SeleccionProducto.producto_id == producto_id).delete()
+    foto = producto.imagen_url
     db.delete(producto)
     try:
         db.commit()
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="No se puede eliminar: hay datos que dependen de este producto")
+    imagenes.limpiar(db, foto)

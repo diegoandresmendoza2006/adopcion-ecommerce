@@ -59,7 +59,7 @@
 
       <div class="full">
         <label>Foto (opcional)</label>
-        <app-subir-foto [(url)]="fotoUrl" (subiendoChange)="subiendoFoto.set($event)"></app-subir-foto>
+        <app-subir-foto tipo="mascotas" [subcarpeta]="nueva.raza ?? ''" [especie]="nueva.especie" [(url)]="fotoUrl" (subiendoChange)="subiendoFoto.set($event)"></app-subir-foto>
       </div>
       <div class="full"><label for="campo-descripcion">Descripción</label><textarea id="campo-descripcion" rows="2" [(ngModel)]="nueva.descripcion" name="descripcion"></textarea></div>
       <div class="full">

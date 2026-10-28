@@ -30,8 +30,7 @@
       <div><label for="campo-stock" class="req">Stock</label><input id="campo-stock" type="number" min="0" [(ngModel)]="nuevo.stock" name="stock" required></div>
       <div class="full">
         <label>Foto (opcional)</label>
-        <app-subir-foto [(url)]="fotoUrl" (subiendoChange)="subiendoFoto.set($event)"></app-subir-foto>
-      </div>
+        <app-subir-foto tipo="productos" [subcarpeta]="nombreCategoria(nuevo.categoria_id ?? 0)" [(url)]="fotoUrl" (subiendoChange)="subiendoFoto.set($event)"></app-subir-foto>
       <div class="full"><label for="campo-descripcion">Descripción</label><textarea id="campo-descripcion" rows="2" [(ngModel)]="nuevo.descripcion" name="descripcion"></textarea></div>
       <div class="full">
         <button type="submit" [disabled]="enviando() || subiendoFoto() || f.invalid">

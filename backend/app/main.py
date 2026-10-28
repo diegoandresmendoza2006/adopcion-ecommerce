@@ -11,6 +11,7 @@ from .routers import adopciones
 from .routers import compras
 from .routers import seguimientos
 from .routers import admin
+from .routers import imagenes
 
 app = FastAPI(title="API - Adopción y E-commerce")
 
@@ -37,6 +38,7 @@ app.include_router(productos.router)
 app.include_router(compras.router)
 app.include_router(seguimientos.router)
 app.include_router(admin.router)
+app.include_router(imagenes.router)
 
 @app.get("/")
 def read_root():

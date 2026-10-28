@@ -11,6 +11,4 @@ export const ROL_ENCARGADO = 2;
 export const ROL_USUARIO = 3;
 
 
-// Cloudinary (alojamiento de fotos). Rellena estos dos valores con los de TU cuenta.
-export const CLOUDINARY_CLOUD_NAME: string = 'hbqea1ba';
-export const CLOUDINARY_UPLOAD_PRESET: string = 'ml_default';
+

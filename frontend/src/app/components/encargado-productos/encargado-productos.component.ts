@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIcon } from '@ng-icons/core';
@@ -22,9 +22,10 @@ export class EncargadoProductosComponent implements OnInit {
   error = signal('');
   ok = signal('');
 
-  // Foto del formulario (la maneja <app-subir-foto>)
+   // Foto del formulario (la maneja <app-subir-foto>)
   fotoUrl = signal('');
   subiendoFoto = signal(false);
+  foto = viewChild(SubirFotoComponent);
 
   // null = creando; con número = editando ese producto
   editandoId = signal<number | null>(null);
@@ -117,6 +118,7 @@ export class EncargadoProductosComponent implements OnInit {
         this.enviando.set(false);
         this.ok.set(id === null ? 'Producto creado.' : 'Producto actualizado.');
         this.ultimoEditadoId.set(guardado.id);   // el producto guardado sube al primer lugar
+        this.foto()?.confirmar();
         this.cerrarForm();
         this.cargar();
       },

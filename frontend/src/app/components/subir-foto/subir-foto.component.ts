@@ -1,10 +1,14 @@
-import { Component, model, output, signal } from '@angular/core';
+import { Component, OnDestroy, effect, input, model, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgIcon } from '@ng-icons/core';
-import { ImagenService } from '../../services/imagen.service';
+import { ImagenService, TipoImagen } from '../../services/imagen.service';
 
 // Zona para ARRASTRAR una foto o hacer clic para SELECCIONARLA.
-// Uso:  <app-subir-foto [(url)]="fotoUrl" (subiendoChange)="subiendoFoto.set($event)"></app-subir-foto>
+// Uso:  <app-subir-foto tipo="mascotas" [subcarpeta]="raza" [especie]="especie" [(url)]="fotoUrl"
+//                       (subiendoChange)="subiendoFoto.set($event)"></app-subir-foto>
+// La foto se sube al BACKEND (que la guarda en Cloudinary, en carpetas ordenadas). Si el usuario la cambia, la quita
+// o cierra el formulario SIN guardar, esa foto se descarta en el servidor para no dejar basura.
+// Cuando el formulario se guarda bien, el padre llama a confirmar() para que la foto ya no se descarte.
 @Component({
   selector: 'app-subir-foto',
   standalone: true,
@@ -68,16 +72,45 @@ import { ImagenService } from '../../services/imagen.service';
     .campo-url { width: 100%; box-sizing: border-box; margin-top: 6px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
   `]
 })
-export class SubirFotoComponent {
+export class SubirFotoComponent implements OnDestroy {
   url = model<string>('');
   subiendoChange = output<boolean>();
+
+  // Dónde se organiza la foto en Cloudinary
+  tipo = input<TipoImagen>('mascotas');
+  subcarpeta = input<string>('');   // raza (mascotas) o categoría (productos)
+  especie = input<string>('');      // solo mascotas
+
+  // Foto subida en esta sesión que todavía NO se guardó en la base de datos
+  private pendiente: string | null = null;
 
   arrastrando = signal(false);
   subiendo = signal(false);
   error = signal('');
   verUrl = signal(false);
 
-  constructor(private imagenes: ImagenService) {}
+  constructor(private imagenes: ImagenService) {
+    // Si la foto pendiente deja de ser la actual (la cambiaron, la quitaron o el formulario cargó otra), se descarta
+    effect(() => {
+      const actual = this.url();
+      if (this.pendiente && actual !== this.pendiente) this.descartarPendiente();
+    });
+  }
+
+  /** El formulario se guardó bien: la foto ya pertenece a una mascota/producto y no debe descartarse. */
+  confirmar() {
+    this.pendiente = null;
+  }
+
+  ngOnDestroy() {
+    this.descartarPendiente();   // formulario cerrado sin guardar
+  }
+
+  private descartarPendiente() {
+    const url = this.pendiente;
+    this.pendiente = null;
+    if (url) this.imagenes.descartar(url).subscribe({ error: () => {} });
+  }
 
   alArrastrar(e: DragEvent) {
     e.preventDefault();
@@ -119,24 +152,22 @@ export class SubirFotoComponent {
       this.error.set(problema);
       return;
     }
-    if (!this.imagenes.configurado()) {
-      this.error.set('Falta configurar Cloudinary: pon tu Cloud name y tu Upload preset en services/api.config.ts. Mientras tanto puedes pegar el enlace de una imagen.');
-      this.verUrl.set(true);
-      return;
-    }
-
     this.subiendo.set(true);
     this.subiendoChange.emit(true);
-    this.imagenes.subir(archivo).subscribe({
+    this.imagenes.subir(archivo, this.tipo(), this.subcarpeta(), this.especie()).subscribe({
       next: (url) => {
+        this.descartarPendiente();   // si ya había una foto sin guardar, se borra antes de poner la nueva
+        this.pendiente = url;
         this.url.set(url);
         this.subiendo.set(false);
         this.subiendoChange.emit(false);
       },
-      error: () => {
+      error: (err) => {
         this.subiendo.set(false);
         this.subiendoChange.emit(false);
-        this.error.set('No se pudo subir la foto. Revisa que el Cloud name y el Upload preset sean correctos y que el preset sea "Unsigned".');
+        const detalle = err?.error?.detail;
+        this.error.set(typeof detalle === 'string' ? detalle : 'No se pudo subir la foto. Inténtalo de nuevo.');
+        if (err?.status === 503) this.verUrl.set(true);   // servidor sin Cloudinary: se puede pegar un enlace
       }
     });
   }

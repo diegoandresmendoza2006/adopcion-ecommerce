@@ -7,6 +7,7 @@ from .. import schemas
 from .. import models
 from .. import security
 from ..database import get_db
+from .. import imagenes
 
 router = APIRouter(prefix="/mascotas", tags=["Mascotas"])
 
@@ -159,6 +160,8 @@ def _aplicar_cambios(db: Session, mascota: models.Mascota, cambios: dict, usuari
             raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                                 detail="Esta mascota ya tiene una adopción aprobada; no se puede volver a ponerla disponible")
 
+    foto_vieja = mascota.imagen_url
+
     for campo, valor in cambios.items():
         setattr(mascota, campo, valor)
     try:
@@ -167,7 +170,11 @@ def _aplicar_cambios(db: Session, mascota: models.Mascota, cambios: dict, usuari
         db.rollback()
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Los datos no cumplen las reglas de la base de datos")
     db.refresh(mascota)
+    if "imagen_url" in cambios and foto_vieja and foto_vieja != mascota.imagen_url:
+        imagenes.limpiar(db, foto_vieja)
     return mascota
+
+
 
 
 @router.put("/{mascota_id}", response_model=schemas.MascotaOut)
@@ -209,6 +216,8 @@ def eliminar_mascota(mascota_id: int, forzar: bool = False, db: Session = Depend
         ids = [s.id for s in solicitudes]
         db.query(models.SeguimientoAdopcion).filter(models.SeguimientoAdopcion.solicitud_id.in_(ids)).delete(synchronize_session=False)
         db.query(models.SolicitudAdopcion).filter(models.SolicitudAdopcion.id.in_(ids)).delete(synchronize_session=False)
+    
+    foto = mascota.imagen_url
 
     db.delete(mascota)
     try:
@@ -216,3 +225,4 @@ def eliminar_mascota(mascota_id: int, forzar: bool = False, db: Session = Depend
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="No se puede eliminar: hay datos que dependen de esta mascota")
+    imagenes.limpiar(db, foto)

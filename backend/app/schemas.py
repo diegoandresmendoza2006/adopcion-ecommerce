@@ -392,3 +392,8 @@ class RefugioUpdate(BaseModel):
     nombre: Optional[str] = Field(None, min_length=1, max_length=100)
     direccion: Optional[str] = Field(None, max_length=255)
     telefono: Optional[str] = Field(None, max_length=20)
+
+
+class ImagenSubida(BaseModel):
+    url: str
+    public_id: str

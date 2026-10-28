@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIcon } from '@ng-icons/core';
@@ -32,6 +32,7 @@ export class EncargadoMascotasComponent implements OnInit {
   // Foto del formulario (la maneja <app-subir-foto>)
   fotoUrl = signal('');
   subiendoFoto = signal(false);
+  foto = viewChild(SubirFotoComponent);
 
   // null = estamos creando; con número = estamos editando esa mascota
   editandoId = signal<number | null>(null);
@@ -169,6 +170,7 @@ export class EncargadoMascotasComponent implements OnInit {
         this.enviando.set(false);
         this.ok.set(id === null ? 'Mascota registrada.' : 'Mascota actualizada.');
         this.ultimaEditadaId.set(guardada.id);   // la mascota guardada sube al primer lugar
+        this.foto()?.confirmar();                // la foto ya quedó guardada: que no se descarte
         this.cerrarForm();
         this.cargar();
       },
