@@ -1,9 +1,12 @@
+import logging
+
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile, status
 from sqlalchemy.orm import Session
 
 from .. import imagenes, models, schemas, security
 from ..database import get_db
 
+log = logging.getLogger(__name__)
 router = APIRouter(prefix="/imagenes", tags=["Imágenes"])
 
 
@@ -30,8 +33,11 @@ async def subir_imagen(
     carpeta = imagenes.carpeta_para(tipo, usuario.id, subcarpeta, especie)
     try:
         url, public_id = imagenes.subir(contenido, carpeta)
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="No se pudo subir la imagen a Cloudinary")
+    except Exception as e:
+        # El detalle real queda en los Logs de Render (nunca incluye la API Secret)
+        log.exception("Falló la subida a Cloudinary")
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY,
+                            detail=f"No se pudo subir la imagen a Cloudinary ({type(e).__name__}: {str(e)[:150]})")
     return {"url": url, "public_id": public_id}
 
 
