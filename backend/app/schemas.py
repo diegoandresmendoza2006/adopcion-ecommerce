@@ -8,12 +8,30 @@ from typing import Literal, Optional
 # ----------------------------------------
 
 class UsuarioCreate(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
     nombre_completo: str = Field(min_length=2, max_length=100)
     email: EmailStr
     password: str = Field(min_length=8, max_length=72)   # 72 = límite real de bcrypt
-
     rol_id: int = 3  # Asignamos el ID 3 por defecto (Rol: 'Usuario')
     refugio_id: Optional[int] = None
+    # Datos personales (opcionales para no romper el registro de Angular; la app móvil los envía)
+    fecha_nacimiento: Optional[date] = None
+    telefono: Optional[str] = Field(default=None, min_length=7, max_length=30)
+    direccion: Optional[str] = Field(default=None, min_length=5, max_length=255)
+
+    @field_validator("fecha_nacimiento")
+    @classmethod
+    def mayor_de_edad(cls, v: Optional[date]) -> Optional[date]:
+        if v is None:
+            return v
+        hoy = date.today()
+        edad = hoy.year - v.year - ((hoy.month, hoy.day) < (v.month, v.day))
+        if edad < 18:
+            raise ValueError("Debes ser mayor de 18 años para registrarte")
+        if edad > 110:
+            raise ValueError("La fecha de nacimiento no es válida")
+        return v
 
 class UsuarioOut(BaseModel):
     id: int
@@ -21,6 +39,10 @@ class UsuarioOut(BaseModel):
     email: EmailStr
     rol_id: int
     fecha_registro: datetime
+    refugio_id: Optional[int] = None
+    fecha_nacimiento: Optional[date] = None
+    telefono: Optional[str] = None
+    direccion: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -278,7 +300,6 @@ class EncargadoCreate(BaseModel):
     nombre_completo: str
     email: EmailStr
     password: str = Field(min_length=8, max_length=72)
-
     refugio_id: int
 
 

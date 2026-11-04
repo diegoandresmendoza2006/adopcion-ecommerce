@@ -530,7 +530,10 @@ CREATE TABLE adopcion.usuarios (
     password_hash character varying(255) NOT NULL,
     rol_id integer NOT NULL,
     refugio_id integer,
-    fecha_registro timestamp without time zone DEFAULT now() NOT NULL
+    fecha_registro timestamp without time zone DEFAULT now() NOT NULL,
+    fecha_nacimiento date,
+    telefono character varying(30),
+    direccion character varying(255)
 );
 
 

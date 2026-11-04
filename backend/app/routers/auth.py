@@ -26,7 +26,10 @@ def registrar_usuario(usuario: schemas.UsuarioCreate, db: Session = Depends(get_
         email=usuario.email,
         password_hash=hashed_pwd,
         rol_id=security.ROL_USUARIO,
-        refugio_id=None
+        refugio_id=None,
+        fecha_nacimiento=usuario.fecha_nacimiento,
+        telefono=usuario.telefono,
+        direccion=usuario.direccion,
     )
     db.add(nuevo_usuario)
     db.commit()

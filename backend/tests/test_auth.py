@@ -18,6 +18,32 @@ def test_registro_no_permite_hacerse_admin(client):
     assert r.json()["rol_id"] == 3
 
 
+def test_registro_guarda_datos_personales_y_me_los_devuelve(client):
+    r = client.post("/auth/registro", json={
+        "nombre_completo": "Laura Gómez", "email": "laura@correo.com", "password": "Clave1234",
+        "fecha_nacimiento": "1998-05-20", "telefono": "3001234567", "direccion": "Calle 10 # 5-20, Bogotá"})
+    assert r.status_code == 201
+    assert r.json()["telefono"] == "3001234567"
+    token = client.post("/auth/login", data={"username": "laura@correo.com", "password": "Clave1234"}).json()["access_token"]
+    yo = client.get("/auth/me", headers={"Authorization": f"Bearer {token}"}).json()
+    assert yo["fecha_nacimiento"] == "1998-05-20"
+    assert yo["direccion"] == "Calle 10 # 5-20, Bogotá"
+
+
+def test_registro_sin_datos_personales_sigue_funcionando(client):
+    """Angular no envía estos campos: deben ser opcionales."""
+    r = client.post("/auth/registro", json={"nombre_completo": "Sin Datos", "email": "sd@correo.com",
+                                            "password": "Clave1234"})
+    assert r.status_code == 201
+    assert r.json()["telefono"] is None and r.json()["fecha_nacimiento"] is None
+
+
+def test_registro_menor_de_edad_es_422(client):
+    r = client.post("/auth/registro", json={"nombre_completo": "Menor", "email": "menor@correo.com",
+                                            "password": "Clave1234", "fecha_nacimiento": "2015-01-01"})
+    assert r.status_code == 422
+
+
 def test_registro_correo_repetido(client):
     r = client.post("/auth/registro", json={"nombre_completo": "Otra Ana", "email": "ana@correo.com",
                                             "password": "Clave1234"})

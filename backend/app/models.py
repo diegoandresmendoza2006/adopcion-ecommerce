@@ -26,6 +26,10 @@ class Usuario(Base):
     rol_id = Column(Integer, ForeignKey("adopcion.roles.id"), nullable=False)
     refugio_id = Column(Integer, ForeignKey("adopcion.refugios.id"))
     fecha_registro = Column(TIMESTAMP, server_default=func.now())
+    # Datos personales que se piden al registrarse (opcionales: los usuarios antiguos no los tienen)
+    fecha_nacimiento = Column(Date)
+    telefono = Column(String(30))
+    direccion = Column(String(255))
 
 class Mascota(Base):
     __tablename__ = "mascotas"
