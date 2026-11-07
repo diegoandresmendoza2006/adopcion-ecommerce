@@ -130,11 +130,26 @@ def editar_perfil(datos: schemas.PerfilUpdate, usuario: models.Usuario = Depends
                   ids: List[int] = Depends(security.cuentas_del_token), db: Session = Depends(get_db)):
     cambios = {k: v for k, v in datos.model_dump(exclude_unset=True).items()
                if v is not None or k in ("telefono", "direccion", "fecha_nacimiento")}
+    if usuario.rol_id != security.ROL_ADMIN:
+        # Documento y fecha de nacimiento son datos de identidad: tras el registro solo los cambia el admin.
+        # (Si aún están vacíos —cuentas antiguas— sí se pueden completar.)
+        for campo in ("tipo_documento", "numero_documento", "fecha_nacimiento"):
+            if campo in cambios:
+                actual = getattr(usuario, campo)
+                nuevo = cambios[campo]
+                if isinstance(nuevo, str):
+                    nuevo = nuevo.upper() if campo == "numero_documento" else nuevo
+                if actual is not None and actual != nuevo:
+                    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                        detail="Ese dato solo lo puede cambiar el administrador")
+                if actual is not None:
+                    cambios.pop(campo)
     tipo = cambios.get("tipo_documento", usuario.tipo_documento)
     numero = cambios.get("numero_documento", usuario.numero_documento)
-    if ("tipo_documento" in cambios) != ("numero_documento" in cambios):
+    if ("tipo_documento" in cambios) != ("numero_documento" in cambios) and (
+            usuario.rol_id == security.ROL_ADMIN or usuario.numero_documento is None):
         raise HTTPException(status_code=422, detail="Indica el tipo y el número de documento")
-    if numero:
+    if "numero_documento" in cambios and numero:
         numero = numero.upper()
         cambios["numero_documento"] = numero
     if "numero_documento" in cambios and _documento_ocupado(db, tipo, numero, usuario.email):

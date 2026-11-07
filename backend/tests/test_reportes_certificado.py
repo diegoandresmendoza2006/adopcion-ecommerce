@@ -172,7 +172,7 @@ def test_eliminar_encargado_conserva_las_adopciones_que_resolvio(client, ana, en
     assert s is not None and s.resuelto_por_id is None and s.estado == "Aprobada"
 
 
-def test_el_certificado_lleva_el_nombre_de_quien_aprobo(client, ana, enc1, formulario, monkeypatch):
+def test_el_certificado_se_firma_con_refugio_y_gerente(client, ana, enc1, formulario, monkeypatch):
     from app import certificado
     capturado = {}
     original = certificado.generar_certificado
@@ -185,7 +185,7 @@ def test_el_certificado_lleva_el_nombre_de_quien_aprobo(client, ana, enc1, formu
     sid = _adopcion_aprobada(client, ana, enc1, formulario)
     ruta = client.get(f"/adopciones/{sid}/certificado/enlace", headers=ana).json()["ruta"]
     assert client.get(ruta).status_code == 200
-    assert capturado["aprobado_por"]            # el nombre del encargado que aprobó
+    assert capturado["refugio"]                 # la firma izquierda es el refugio; la derecha, el gerente (fija)
 
 
 def test_encargados_solo_los_gestiona_el_admin(client, enc1, ana):

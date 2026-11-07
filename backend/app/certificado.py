@@ -20,6 +20,18 @@ MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto
          "septiembre", "octubre", "noviembre", "diciembre"]
 
 
+# Letra manuscrita (Great Vibes, licencia OFL) para las firmas; si el archivo falta se usa cursiva normal.
+_FUENTE_FIRMA = "Times-BoldItalic"
+try:
+    from pathlib import Path
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    pdfmetrics.registerFont(TTFont("Firma", str(Path(__file__).parent / "fonts" / "GreatVibes-Regular.ttf")))
+    _FUENTE_FIRMA = "Firma"
+except Exception:
+    pass
+
+
 def _t(texto) -> str:
     """Las fuentes estándar del PDF solo traen Latin-1: lo que no se pueda dibujar se cambia por '?'."""
     return str(texto or "").encode("cp1252", "replace").decode("cp1252")
@@ -157,15 +169,20 @@ def generar_certificado(*, solicitud_id: int, adoptante: str, documento: str, ma
     base = 92
     c.setStrokeColor(GRIS)
     c.setLineWidth(0.8)
-    for x, rotulo, nombre in ((ancho * 0.30, "Por el refugio", aprobado_por), (ancho * 0.70, "Por Paws&Shop", None)):
-        if nombre:   # el nombre de quien aprobó la adopción, sobre la línea de la firma
-            c.setFillColor(HexColor("#222222"))
-            c.setFont("Times-Italic", 13)
-            c.drawCentredString(x, base + 22, _t(nombre))
+    firmantes = ((ancho * 0.30, "Por el refugio", refugio, "Representante del refugio"),
+                 (ancho * 0.70, "Por Paws&Shop", "Diego Mendoza", "Gerente General"))
+    for x, rotulo, nombre, cargo in firmantes:
+        # La firma va en cursiva grande sobre la línea; debajo, el cargo/entidad
+        c.setFillColor(HexColor("#1F3A5F"))
+        tam = 30
+        while tam > 12 and c.stringWidth(_t(nombre), _FUENTE_FIRMA, tam) > 260:
+            tam -= 1                      # nombres de refugio largos se achican para caber
+        c.setFont(_FUENTE_FIRMA, tam)
+        c.drawCentredString(x, base + 22, _t(nombre))
         c.line(x - 90, base + 16, x + 90, base + 16)
         c.setFillColor(GRIS)
         c.setFont("Helvetica", 10)
-        c.drawCentredString(x, base, rotulo)
+        c.drawCentredString(x, base, _t(cargo))
     _huella(c, ancho / 2, base + 12, 0.7, VERDE_MEDIO)
 
     # Pie

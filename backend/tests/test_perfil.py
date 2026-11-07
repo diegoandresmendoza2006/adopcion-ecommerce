@@ -93,6 +93,33 @@ def test_editar_perfil(client, ana):
     assert r.json()["nombre_completo"] == "Ana Nueva" and r.json()["numero_documento"] == "AB12345"
 
 
+def test_usuario_no_puede_cambiar_documento_ni_fecha_una_vez_registrados(client, ana):
+    assert client.put("/auth/me", headers=ana, json={"tipo_documento": "CC", "numero_documento": "12345678",
+                                                     "fecha_nacimiento": "1995-05-05"}).status_code == 200
+    r = client.put("/auth/me", headers=ana, json={"numero_documento": "99999999", "tipo_documento": "CC"})
+    assert r.status_code == 403
+    assert client.put("/auth/me", headers=ana, json={"fecha_nacimiento": "1990-01-01"}).status_code == 403
+    # reenviar los mismos valores no es un cambio: se aceptan los datos básicos
+    r = client.put("/auth/me", headers=ana, json={"tipo_documento": "CC", "numero_documento": "12345678",
+                                                  "telefono": "3112223344"})
+    assert r.status_code == 200 and r.json()["telefono"] == "3112223344"
+
+
+def test_encargado_tampoco_cambia_su_documento_pero_el_admin_si(client, enc1, admin):
+    client.put("/auth/me", headers=enc1, json={"tipo_documento": "CC", "numero_documento": "70707070"})
+    assert client.put("/auth/me", headers=enc1, json={"tipo_documento": "CC", "numero_documento": "80808080"}).status_code == 403
+    r = client.put("/auth/me", headers=admin, json={"tipo_documento": "CC", "numero_documento": "10101010"})
+    assert r.status_code == 200
+    r = client.put("/auth/me", headers=admin, json={"tipo_documento": "CC", "numero_documento": "20202020"})
+    assert r.status_code == 200 and r.json()["numero_documento"] == "20202020"
+
+
+def test_admin_cambia_el_documento_de_un_cliente(client, admin, ana):
+    client.put("/auth/me", headers=ana, json={"tipo_documento": "CC", "numero_documento": "12345678"})
+    r = client.put("/admin/clientes/3", headers=admin, json={"tipo_documento": "CE", "numero_documento": "ZZ12345"})
+    assert r.status_code == 200 and r.json()["numero_documento"] == "ZZ12345"
+
+
 def test_editar_perfil_documento_ajeno_400(client, ana, beto):
     client.put("/auth/me", headers=ana, json={"tipo_documento": "CC", "numero_documento": "55555555"})
     r = client.put("/auth/me", headers=beto, json={"tipo_documento": "CC", "numero_documento": "55555555"})
