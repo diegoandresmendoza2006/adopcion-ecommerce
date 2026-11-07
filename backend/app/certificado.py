@@ -118,11 +118,11 @@ def generar_certificado(*, solicitud_id: int, adoptante: str, documento: str, ma
     c.setLineWidth(1.5)
     c.line(ancho / 2 - 120, alto - 178, ancho / 2 + 120, alto - 178)
 
-    # Foto (si hay) a la izquierda; el texto se centra en el resto de la hoja
+    # Foto (si hay) en el margen izquierdo, con una huellita igual a la derecha; el texto SIEMPRE va centrado en la hoja
     foto = _foto(foto_url)
     centro = ancho / 2
     if foto is not None:
-        radio, fx, fy = 62, 150, alto / 2 - 20
+        radio, fx, fy = 52, 125, alto / 2 - 20
         c.setStrokeColor(DORADO)
         c.setLineWidth(4)
         c.circle(fx, fy, radio + 4, stroke=1, fill=0)
@@ -134,13 +134,16 @@ def generar_certificado(*, solicitud_id: int, adoptante: str, documento: str, ma
         escala = max(2 * radio / iw, 2 * radio / ih)
         c.drawImage(foto, fx - iw * escala / 2, fy - ih * escala / 2, iw * escala, ih * escala, mask="auto")
         c.restoreState()
-        centro = (ancho + 150 + radio) / 2
+        _huella(c, ancho - fx, fy - 5, 1.6, VERDE_CLARO)   # contrapeso para que la hoja quede simétrica
 
     c.setFillColor(GRIS)
     c.setFont("Times-Italic", 15)
     c.drawCentredString(centro, alto - 212, "Se certifica que")
     c.setFillColor(HexColor("#222222"))
-    c.setFont("Times-BoldItalic", 30)
+    tam = 30
+    while tam > 16 and c.stringWidth(_t(adoptante), "Times-BoldItalic", tam) > 400:
+        tam -= 1                                  # nombres muy largos se achican para no chocar con la foto
+    c.setFont("Times-BoldItalic", tam)
     c.drawCentredString(centro, alto - 250, _t(adoptante))
     if documento:
         c.setFillColor(GRIS)
