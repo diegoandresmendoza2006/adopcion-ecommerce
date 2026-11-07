@@ -48,6 +48,30 @@ def create_access_token(data: dict):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
+# ---------- Enlaces temporales de descarga ----------
+# El navegador no puede mandar la cabecera Authorization al abrir un enlace, así que el servidor
+# entrega una ruta con un token de vida muy corta que sirve SOLO para ese archivo (no abre sesión).
+MINUTOS_DESCARGA = 5
+
+
+def crear_token_descarga(recurso: str, usuario_id: int, datos: dict = None) -> str:
+    expira = datetime.now(timezone.utc) + timedelta(minutes=MINUTOS_DESCARGA)
+    return jwt.encode({"descarga": recurso, "uid": usuario_id, "datos": datos or {}, "exp": expira},
+                      SECRET_KEY, algorithm=ALGORITHM)
+
+
+def leer_token_descarga(token: str, recurso: str) -> dict:
+    """Devuelve {'uid':..., 'datos':...} o lanza 401 si el enlace venció o es de otro archivo."""
+    try:
+        carga = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except JWTError:
+        carga = {}
+    if carga.get("descarga") != recurso:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="El enlace de descarga venció. Vuelve a pedirlo desde la app.")
+    return carga
+
+
 def cuentas_del_token(token: str = Depends(oauth2_scheme)) -> list:
     """Ids de las cuentas que esta sesión puede usar (la persona inició sesión con la contraseña de todas)."""
     try:

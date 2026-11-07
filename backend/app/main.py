@@ -13,6 +13,7 @@ from .routers import seguimientos
 from .routers import admin
 from .routers import imagenes
 from .routers import favoritos
+from .routers import descargas
 from sqlalchemy import text
 from .database import SessionLocal
 
@@ -44,6 +45,7 @@ app.include_router(seguimientos.router)
 app.include_router(admin.router)
 app.include_router(imagenes.router)
 app.include_router(favoritos.router)
+app.include_router(descargas.router)
 
 @app.get("/health", tags=["Sonda"])
 def health():

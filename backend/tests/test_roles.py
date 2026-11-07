@@ -26,7 +26,7 @@ def test_admin_ve_metricas(client, admin):
 
 
 def test_admin_crea_encargado_con_clave_valida(client, admin):
-    datos = {"nombre_completo": "Nuevo Encargado", "email": "nuevo.enc@correo.com", "password": "Clave1234",
+    datos = {"nombre_completo": "Nuevo Encargado", "email": "nuevo.enc@correo.com", "password": "Clave#Segura9",
              "refugio_id": 1}
     assert client.post("/admin/encargados", json=datos, headers=admin).status_code == 201
 

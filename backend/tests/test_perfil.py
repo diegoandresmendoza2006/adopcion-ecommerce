@@ -2,7 +2,7 @@
 from app import imagenes, models
 from .conftest import CLAVE
 
-BASE = dict(nombre_completo="Laura Gómez", email="laura@correo.com", password="Clave1234",
+BASE = dict(nombre_completo="Laura Gómez", email="laura@correo.com", password="Clave#Segura9",
             fecha_nacimiento="1998-05-20", telefono="3001234567", direccion="Calle 10 # 5-20",
             tipo_documento="CC", numero_documento="1012345678")
 
@@ -37,13 +37,13 @@ def test_correo_repetido_como_usuario_400(client):
 
 # ---------- doble rol ----------
 def test_encargado_crea_cuenta_de_usuario_con_su_misma_clave(client):
-    # enc1@correo.com ya es Encargado (clave Clave1234)
+    # enc1@correo.com ya es Encargado (clave Clave#Segura9)
     r = registrar(client, email="enc1@correo.com", nombre_completo="Enc Prueba")
     assert r.status_code == 201 and r.json()["rol_id"] == 3
 
 
 def test_encargado_con_otra_clave_no_puede_crear_cuenta_de_usuario(client):
-    r = registrar(client, email="enc1@correo.com", password="OtraClave99")
+    r = registrar(client, email="enc1@correo.com", password="Otra#Clave99")
     assert r.status_code == 400 and "misma contraseña" in r.json()["detail"]
 
 
@@ -73,13 +73,13 @@ def test_no_se_puede_cambiar_a_una_cuenta_ajena(client, ana):
 
 
 def test_registrar_con_correo_de_admin_y_otra_clave_no_da_acceso(client):
-    r = registrar(client, email="admin@correo.com", password="Hacker12345")
+    r = registrar(client, email="admin@correo.com", password="Hacker#Clave9")
     assert r.status_code == 400
 
 
 def test_admin_crea_encargado_para_un_usuario_existente_y_comparte_clave(client, admin):
     r = client.post("/admin/encargados", headers=admin, json={
-        "nombre_completo": "Ana Prueba", "email": "ana@correo.com", "password": "Otra12345", "refugio_id": 1})
+        "nombre_completo": "Ana Prueba", "email": "ana@correo.com", "password": "Otra#Clave9", "refugio_id": 1})
     assert r.status_code == 201
     t = client.post("/auth/login", data={"username": "ana@correo.com", "password": CLAVE}).json()
     assert {c["rol_id"] for c in t["cuentas"]} == {2, 3}
@@ -104,11 +104,11 @@ def test_editar_perfil_valida_mayoria_de_edad(client, ana):
 
 
 def test_cambiar_contrasena(client, ana):
-    mal = client.put("/auth/me/password", headers=ana, json={"actual": "Equivocada1", "nueva": "NuevaClave99"})
+    mal = client.put("/auth/me/password", headers=ana, json={"actual": "Equivocada1", "nueva": "Nueva#Clave99"})
     assert mal.status_code == 400
-    ok = client.put("/auth/me/password", headers=ana, json={"actual": CLAVE, "nueva": "NuevaClave99"})
+    ok = client.put("/auth/me/password", headers=ana, json={"actual": CLAVE, "nueva": "Nueva#Clave99"})
     assert ok.status_code == 204
-    assert client.post("/auth/login", data={"username": "ana@correo.com", "password": "NuevaClave99"}).status_code == 200
+    assert client.post("/auth/login", data={"username": "ana@correo.com", "password": "Nueva#Clave99"}).status_code == 200
     assert client.post("/auth/login", data={"username": "ana@correo.com", "password": CLAVE}).status_code == 401
 
 

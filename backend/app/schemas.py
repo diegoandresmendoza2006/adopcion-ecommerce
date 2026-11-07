@@ -22,12 +22,30 @@ def _validar_edad(v: Optional[date]) -> Optional[date]:
     return v
 
 
+def validar_password_fuerte(v: str) -> str:
+    """Mínimo 8 caracteres, una mayúscula, un carácter especial y sin números en secuencia (123, 321)."""
+    faltan = []
+    if len(v) < 8:
+        faltan.append("mínimo 8 caracteres")
+    if not any(c.isupper() for c in v):
+        faltan.append("una letra mayúscula")
+    if not any(not c.isalnum() and not c.isspace() for c in v):
+        faltan.append("un carácter especial (por ejemplo ! @ # $ %)")
+    # Solo cuentan los números pegados (1-2-3 o 3-2-1), no "1a2b3"
+    if any(v[i:i + 3].isdigit() and int(v[i + 1]) - int(v[i]) == int(v[i + 2]) - int(v[i + 1]) == paso
+           for i in range(len(v) - 2) for paso in (1, -1)):
+        faltan.append("sin números en secuencia (como 123 o 321)")
+    if faltan:
+        raise ValueError("La contraseña debe tener: " + ", ".join(faltan))
+    return v
+
+
 class UsuarioCreate(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
     nombre_completo: str = Field(min_length=2, max_length=100)
     email: EmailStr
-    password: str = Field(min_length=8, max_length=72)   # 72 = límite real de bcrypt
+    password: str = Field(max_length=72)   # 72 = límite real de bcrypt
     rol_id: int = 3  # Asignamos el ID 3 por defecto (Rol: 'Usuario')
     refugio_id: Optional[int] = None
     # Datos personales (opcionales para no romper el registro de Angular; la app móvil los envía)
@@ -36,6 +54,11 @@ class UsuarioCreate(BaseModel):
     direccion: Optional[str] = Field(default=None, min_length=5, max_length=255)
     tipo_documento: Optional[TipoDocumento] = None
     numero_documento: Optional[str] = Field(default=None, pattern=r"^[A-Za-z0-9]{5,20}$")
+
+    @field_validator("password")
+    @classmethod
+    def _clave_fuerte(cls, v: str) -> str:
+        return validar_password_fuerte(v)
 
     @field_validator("fecha_nacimiento")
     @classmethod
@@ -89,7 +112,12 @@ class PerfilUpdate(BaseModel):
 
 class CambioPassword(BaseModel):
     actual: str = Field(min_length=1, max_length=72)
-    nueva: str = Field(min_length=8, max_length=72)
+    nueva: str = Field(max_length=72)
+
+    @field_validator("nueva")
+    @classmethod
+    def _clave_fuerte(cls, v: str) -> str:
+        return validar_password_fuerte(v)
 
 
 class ClienteUpdate(PerfilUpdate):
@@ -371,8 +399,13 @@ class SeguimientoOut(BaseModel):
 class EncargadoCreate(BaseModel):
     nombre_completo: str
     email: EmailStr
-    password: str = Field(min_length=8, max_length=72)
+    password: str = Field(max_length=72)
     refugio_id: int
+
+    @field_validator("password")
+    @classmethod
+    def _clave_fuerte(cls, v: str) -> str:
+        return validar_password_fuerte(v)
 
 
 class EncargadoOut(BaseModel):
@@ -381,6 +414,21 @@ class EncargadoOut(BaseModel):
     email: EmailStr
     refugio_id: Optional[int] = None
     refugio_nombre: Optional[str] = None
+
+
+class EncargadoUpdate(BaseModel):
+    """Todo opcional: solo cambia lo que llegue. Con [password] se le asigna una contraseña nueva."""
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    nombre_completo: Optional[str] = Field(default=None, min_length=2, max_length=100)
+    email: Optional[EmailStr] = None
+    refugio_id: Optional[int] = None
+    password: Optional[str] = Field(default=None, max_length=72)
+
+    @field_validator("password")
+    @classmethod
+    def _clave_fuerte(cls, v: Optional[str]) -> Optional[str]:
+        return v if v is None else validar_password_fuerte(v)
 
 
 class AuditoriaOut(BaseModel):
@@ -490,3 +538,20 @@ class RefugioUpdate(BaseModel):
 class ImagenSubida(BaseModel):
     url: str
     public_id: str
+
+
+class MesOut(BaseModel):
+    """Un mes del historial del negocio (GET /admin/metricas/meses)."""
+    mes: str          # '2026-11'
+    nombre: str       # 'Noviembre 2026'
+    solicitudes: int
+    adopciones: int
+    pedidos: int
+    ventas: float
+    usuarios_nuevos: int
+
+
+class EnlaceOut(BaseModel):
+    """Ruta temporal para descargar un archivo (se pega detrás de la dirección del servidor)."""
+    ruta: str
+    expira_en: int    # segundos

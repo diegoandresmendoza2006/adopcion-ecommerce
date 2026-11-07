@@ -150,6 +150,7 @@ def cambiar_estado(solicitud_id: int, datos: schemas.EstadoUpdate, db: Session =
     s.estado = datos.estado
     s.comentario_encargado = _limpio(datos.comentario)
     s.fecha_respuesta = datetime.now()
+    s.resuelto_por_id = usuario.id
 
     if datos.estado == ESTADO_APROBADA:
         m.estado_adopcion = MASCOTA_ADOPTADA
@@ -175,3 +176,23 @@ def enviar_comentario(solicitud_id: int, datos: schemas.ComentarioUpdate, db: Se
     s.fecha_respuesta = datetime.now()
     db.commit()
     return _a_detalle(_consulta_detalle(db).filter(models.SolicitudAdopcion.id == solicitud_id).first())
+
+
+@router.get("/{solicitud_id}/certificado/enlace", response_model=schemas.EnlaceOut)
+def enlace_certificado(solicitud_id: int, db: Session = Depends(database.get_db),
+                       usuario: models.Usuario = Depends(security.get_current_user)):
+    """Enlace temporal para bajar el certificado PDF. Lo pide el adoptante (o el personal del refugio)."""
+    fila = _consulta_detalle(db).filter(models.SolicitudAdopcion.id == solicitud_id).first()
+    if not fila:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="La solicitud no existe")
+    s, m, _ = fila
+    es_dueno = s.usuario_id == usuario.id
+    es_personal = usuario.rol_id == security.ROL_ADMIN or (
+        usuario.rol_id == security.ROL_ENCARGADO and usuario.refugio_id == m.refugio_id)
+    if not (es_dueno or es_personal):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No puedes descargar este certificado")
+    if s.estado != ESTADO_APROBADA:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="El certificado solo existe para adopciones aprobadas")
+    token = security.crear_token_descarga("certificado", usuario.id, {"solicitud_id": s.id})
+    return schemas.EnlaceOut(ruta=f"/descargas/certificado/{s.id}?t={token}", expira_en=security.MINUTOS_DESCARGA * 60)

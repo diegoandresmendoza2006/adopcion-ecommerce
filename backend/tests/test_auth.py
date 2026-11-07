@@ -4,7 +4,7 @@ from tests.conftest import CLAVE
 
 def test_registro_crea_usuario_normal(client):
     r = client.post("/auth/registro", json={"nombre_completo": "Nuevo Usuario", "email": "nuevo@correo.com",
-                                            "password": "Clave1234"})
+                                            "password": "Clave#Segura9"})
     assert r.status_code == 201
     assert r.json()["rol_id"] == 3
     assert "password" not in r.json() and "password_hash" not in r.json()
@@ -13,18 +13,18 @@ def test_registro_crea_usuario_normal(client):
 def test_registro_no_permite_hacerse_admin(client):
     """Aunque el cliente mande rol_id=1, el backend lo ignora."""
     r = client.post("/auth/registro", json={"nombre_completo": "Intruso", "email": "intruso@correo.com",
-                                            "password": "Clave1234", "rol_id": 1, "refugio_id": 1})
+                                            "password": "Clave#Segura9", "rol_id": 1, "refugio_id": 1})
     assert r.status_code == 201
     assert r.json()["rol_id"] == 3
 
 
 def test_registro_guarda_datos_personales_y_me_los_devuelve(client):
     r = client.post("/auth/registro", json={
-        "nombre_completo": "Laura Gómez", "email": "laura@correo.com", "password": "Clave1234",
+        "nombre_completo": "Laura Gómez", "email": "laura@correo.com", "password": "Clave#Segura9",
         "fecha_nacimiento": "1998-05-20", "telefono": "3001234567", "direccion": "Calle 10 # 5-20, Bogotá"})
     assert r.status_code == 201
     assert r.json()["telefono"] == "3001234567"
-    token = client.post("/auth/login", data={"username": "laura@correo.com", "password": "Clave1234"}).json()["access_token"]
+    token = client.post("/auth/login", data={"username": "laura@correo.com", "password": "Clave#Segura9"}).json()["access_token"]
     yo = client.get("/auth/me", headers={"Authorization": f"Bearer {token}"}).json()
     assert yo["fecha_nacimiento"] == "1998-05-20"
     assert yo["direccion"] == "Calle 10 # 5-20, Bogotá"
@@ -33,20 +33,20 @@ def test_registro_guarda_datos_personales_y_me_los_devuelve(client):
 def test_registro_sin_datos_personales_sigue_funcionando(client):
     """Angular no envía estos campos: deben ser opcionales."""
     r = client.post("/auth/registro", json={"nombre_completo": "Sin Datos", "email": "sd@correo.com",
-                                            "password": "Clave1234"})
+                                            "password": "Clave#Segura9"})
     assert r.status_code == 201
     assert r.json()["telefono"] is None and r.json()["fecha_nacimiento"] is None
 
 
 def test_registro_menor_de_edad_es_422(client):
     r = client.post("/auth/registro", json={"nombre_completo": "Menor", "email": "menor@correo.com",
-                                            "password": "Clave1234", "fecha_nacimiento": "2015-01-01"})
+                                            "password": "Clave#Segura9", "fecha_nacimiento": "2015-01-01"})
     assert r.status_code == 422
 
 
 def test_registro_correo_repetido(client):
     r = client.post("/auth/registro", json={"nombre_completo": "Otra Ana", "email": "ana@correo.com",
-                                            "password": "Clave1234"})
+                                            "password": "Clave#Segura9"})
     assert r.status_code == 400
 
 
@@ -57,7 +57,7 @@ def test_registro_contrasena_corta(client):
 
 def test_registro_correo_invalido(client):
     r = client.post("/auth/registro", json={"nombre_completo": "Nuevo", "email": "no-es-correo",
-                                            "password": "Clave1234"})
+                                            "password": "Clave#Segura9"})
     assert r.status_code == 422
 
 

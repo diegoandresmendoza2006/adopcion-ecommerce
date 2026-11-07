@@ -31,7 +31,7 @@ def _adjuntar_esquema(conexion, _):
     conexion.execute(f"ATTACH DATABASE '{_tmp}/adopcion.db' AS adopcion")
 
 
-CLAVE = "Clave1234"
+CLAVE = "Clave#Segura9"
 _HASH = security.hash_password(CLAVE)   # se calcula una sola vez (bcrypt es lento a propósito)
 
 # id -> (rol, refugio)

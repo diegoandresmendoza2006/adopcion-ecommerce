@@ -1,196 +1,47 @@
-import io
 import math
-import re
-from datetime import datetime
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
-from fastapi.responses import Response
-from openpyxl import Workbook
-from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
-from openpyxl.utils import get_column_letter
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 from .. import schemas
 from .. import database
 from .. import models
 from .. import imagenes
+from .. import reportes
+from .adopciones import ESTADO_APROBADA
 from .. import security
 from ..paginacion import like, paginar
-from .adopciones import ESTADO_APROBADA
 
 router = APIRouter(prefix="/admin", tags=["Administración"], dependencies=[Depends(security.require_admin)])
 
-MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto",
-         "Septiembre", "Octubre", "Noviembre", "Diciembre"]
-PATRON_MES = r"^\d{4}-(0[1-9]|1[0-2])$"
-
-
-def _rango_mes(mes: Optional[str]):
-    """'2026-10' -> (1 oct 2026, 1 nov 2026, '2026-10'). Sin dato = mes actual."""
-    if mes is None:
-        hoy = datetime.now()
-        anio, num = hoy.year, hoy.month
-    else:
-        anio, num = int(mes[:4]), int(mes[5:7])
-    inicio = datetime(anio, num, 1)
-    fin = datetime(anio + 1, 1, 1) if num == 12 else datetime(anio, num + 1, 1)
-    return inicio, fin, f"{anio}-{num:02d}"
-
-
-def _calcular_metricas(db: Session, mes: Optional[str]) -> schemas.MetricasOut:
-    inicio, fin, etiqueta = _rango_mes(mes)
-    S, O, U, M = models.SolicitudAdopcion, models.OrdenCompra, models.Usuario, models.Mascota
-
-    def contar(consulta):
-        return consulta.scalar() or 0
-
-    en_mes_sol = (S.fecha_solicitud >= inicio, S.fecha_solicitud < fin)
-    en_mes_ord = (O.fecha_compra >= inicio, O.fecha_compra < fin)
-    return schemas.MetricasOut(
-        mes=etiqueta,
-        solicitudes_mes=contar(db.query(func.count(S.id)).filter(*en_mes_sol)),
-        adopciones_mes=contar(db.query(func.count(S.id)).filter(S.estado == ESTADO_APROBADA, *en_mes_sol)),
-        pedidos_mes=contar(db.query(func.count(O.id)).filter(*en_mes_ord)),
-        ventas_mes=float(db.query(func.coalesce(func.sum(O.total), 0)).filter(*en_mes_ord).scalar() or 0),
-        ventas_totales=float(db.query(func.coalesce(func.sum(O.total), 0)).scalar() or 0),
-        usuarios_registrados=contar(db.query(func.count(U.id))),
-        usuarios_nuevos_mes=contar(db.query(func.count(U.id)).filter(U.fecha_registro >= inicio, U.fecha_registro < fin)),
-        mascotas_disponibles=contar(db.query(func.count(M.id)).filter(M.estado_adopcion == "Disponible")),
-        mascotas_adoptadas=contar(db.query(func.count(M.id)).filter(M.estado_adopcion == "Adoptada")),
-    )
+PATRON_MES = reportes.PATRON_MES
+TIPO_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 
 @router.get("/metricas", response_model=schemas.MetricasOut)
 def metricas(mes: Optional[str] = Query(None, pattern=PATRON_MES), db: Session = Depends(database.get_db)):
-    return _calcular_metricas(db, mes)
+    return reportes.calcular_metricas(db, mes)
 
 
-# ---------- Reporte en Excel (con formato) ----------
-VERDE = "28A745"
-BORDE = Border(*(Side(style="thin", color="D0D5DA"),) * 4)
-
-
-def _encabezado(hoja, fila, titulos):
-    for col, titulo in enumerate(titulos, start=1):
-        c = hoja.cell(row=fila, column=col, value=titulo)
-        c.font = Font(bold=True, color="FFFFFF")
-        c.fill = PatternFill("solid", fgColor=VERDE)
-        c.alignment = Alignment(horizontal="center", vertical="center")
-        c.border = BORDE
-
-
-def _ajustar_columnas(hoja, minimo=12, maximo=45):
-    for col in hoja.columns:
-        largo = max((len(str(c.value)) for c in col if c.value is not None and c.row > 4), default=minimo)
-        hoja.column_dimensions[get_column_letter(col[0].column)].width = max(minimo, min(maximo, largo + 3))
+@router.get("/metricas/meses", response_model=List[schemas.MesOut])
+def metricas_por_mes(db: Session = Depends(database.get_db)):
+    """Mes a mes desde el primer movimiento hasta hoy (para el panel con historial)."""
+    return reportes.serie_mensual(db)
 
 
 @router.get("/reporte.xlsx")
-def reporte_excel(mes: Optional[str] = Query(None, pattern=PATRON_MES), db: Session = Depends(database.get_db)):
-    inicio, fin, etiqueta = _rango_mes(mes)
-    m = _calcular_metricas(db, etiqueta)
-    nombre_mes = f"{MESES[inicio.month - 1]} {inicio.year}"
-    dinero = '"$"#,##0.00'
-    fecha_fmt = "dd/mm/yyyy hh:mm"
-
-    wb = Workbook()
-
-    # ---- Hoja 1: Resumen
-    h = wb.active
-    h.title = "Resumen"
-    h.sheet_view.showGridLines = False
-    h["A1"] = "Paws&Shop · Reporte mensual"
-    h["A1"].font = Font(size=18, bold=True, color=VERDE)
-    h["A2"] = f"Periodo: {nombre_mes}"
-    h["A2"].font = Font(size=12, bold=True)
-    h["A3"] = f"Generado el {datetime.now():%d/%m/%Y a las %H:%M}"
-    h["A3"].font = Font(italic=True, color="666666")
-    _encabezado(h, 5, ["Indicador", "Valor"])
-    filas = [
-        (f"Solicitudes de adopción ({nombre_mes})", m.solicitudes_mes, None),
-        (f"Adopciones aprobadas ({nombre_mes})", m.adopciones_mes, None),
-        (f"Pedidos de la tienda ({nombre_mes})", m.pedidos_mes, None),
-        (f"Ventas de {nombre_mes}", m.ventas_mes, dinero),
-        ("Ventas acumuladas (todos los meses)", m.ventas_totales, dinero),
-        (f"Usuarios nuevos ({nombre_mes})", m.usuarios_nuevos_mes, None),
-        ("Usuarios registrados (total)", m.usuarios_registrados, None),
-        ("Mascotas disponibles hoy", m.mascotas_disponibles, None),
-        ("Mascotas adoptadas (total)", m.mascotas_adoptadas, None),
-    ]
-    for i, (texto, valor, fmt) in enumerate(filas, start=6):
-        a, b = h.cell(row=i, column=1, value=texto), h.cell(row=i, column=2, value=valor)
-        a.border = b.border = BORDE
-        b.alignment = Alignment(horizontal="right")
-        if fmt:
-            b.number_format = fmt
-        if i % 2 == 1:
-            a.fill = b.fill = PatternFill("solid", fgColor="F3F8F4")
-    h.column_dimensions["A"].width = 48
-    h.column_dimensions["B"].width = 20
-
-    # ---- Hoja 2: Adopciones del mes
-    h = wb.create_sheet("Adopciones")
-    h["A1"] = f"Solicitudes de adopción · {nombre_mes}"
-    h["A1"].font = Font(size=14, bold=True, color=VERDE)
-    _encabezado(h, 3, ["Fecha", "Adoptante", "Mascota", "Refugio", "Estado", "Teléfono", "Vivienda"])
-    S, M, U, R = models.SolicitudAdopcion, models.Mascota, models.Usuario, models.Refugio
-    filas = (db.query(S, M, U, R)
-             .join(M, M.id == S.mascota_id).join(U, U.id == S.usuario_id)
-             .outerjoin(R, R.id == M.refugio_id)
-             .filter(S.fecha_solicitud >= inicio, S.fecha_solicitud < fin)
-             .order_by(S.fecha_solicitud).all())
-    for i, (s, mas, usu, ref) in enumerate(filas, start=4):
-        valores = [s.fecha_solicitud, usu.nombre_completo, mas.nombre, ref.nombre if ref else "", s.estado,
-                   s.telefono or "", s.tipo_vivienda or ""]
-        for col, v in enumerate(valores, start=1):
-            c = h.cell(row=i, column=col, value=v)
-            c.border = BORDE
-            if col == 1:
-                c.number_format = fecha_fmt
-    if not filas:
-        h["A4"] = "Sin solicitudes en este periodo."
-        h["A4"].font = Font(italic=True, color="666666")
-    h.freeze_panes = "A4"
-    if filas:
-        h.auto_filter.ref = f"A3:G{3 + len(filas)}"
-    _ajustar_columnas(h)
-
-    # ---- Hoja 3: Ventas del mes
-    h = wb.create_sheet("Ventas")
-    h["A1"] = f"Ventas de la tienda · {nombre_mes}"
-    h["A1"].font = Font(size=14, bold=True, color=VERDE)
-    _encabezado(h, 3, ["N.º pedido", "Fecha", "Cliente", "Estado", "Total"])
-    O = models.OrdenCompra
-    ordenes = (db.query(O, U).join(U, U.id == O.usuario_id)
-               .filter(O.fecha_compra >= inicio, O.fecha_compra < fin).order_by(O.fecha_compra).all())
-    for i, (o, usu) in enumerate(ordenes, start=4):
-        for col, v in enumerate([o.id, o.fecha_compra, usu.nombre_completo, o.estado_pedido, float(o.total)], start=1):
-            c = h.cell(row=i, column=col, value=v)
-            c.border = BORDE
-            if col == 2:
-                c.number_format = fecha_fmt
-            if col == 5:
-                c.number_format = dinero
-    if ordenes:
-        ultima = 3 + len(ordenes)
-        h.cell(row=ultima + 1, column=4, value="TOTAL").font = Font(bold=True)
-        t = h.cell(row=ultima + 1, column=5, value=f"=SUM(E4:E{ultima})")
-        t.font = Font(bold=True)
-        t.number_format = dinero
-        h.auto_filter.ref = f"A3:E{ultima}"
-    else:
-        h["A4"] = "Sin ventas en este periodo."
-        h["A4"].font = Font(italic=True, color="666666")
-    h.freeze_panes = "A4"
-    _ajustar_columnas(h)
-
-    buffer = io.BytesIO()
-    wb.save(buffer)
+def reporte_excel(mes: Optional[str] = Query(None, pattern=PATRON_MES), historico: bool = Query(False),
+                  db: Session = Depends(database.get_db)):
     return Response(
-        content=buffer.getvalue(),
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": f"attachment; filename=reporte_pawsshop_{etiqueta}.xlsx"},
-    )
+        content=reportes.construir_reporte(db, mes, historico), media_type=TIPO_XLSX,
+        headers={"Content-Disposition": f"attachment; filename={reportes.nombre_archivo_reporte(mes, historico)}"})
+
+
+@router.get("/reporte/enlace", response_model=schemas.EnlaceOut)
+def enlace_reporte(mes: Optional[str] = Query(None, pattern=PATRON_MES), historico: bool = Query(False),
+                   admin: models.Usuario = Depends(security.require_admin)):
+    """Enlace temporal (5 min) para bajar el Excel desde el navegador, sin pasar el token de sesión."""
+    token = security.crear_token_descarga("reporte", admin.id, {"mes": mes, "historico": historico})
+    return schemas.EnlaceOut(ruta=f"/descargas/reporte?t={token}", expira_en=security.MINUTOS_DESCARGA * 60)
 
 
 @router.get("/auditoria", response_model=List[schemas.AuditoriaOut])
@@ -258,6 +109,76 @@ def crear_encargado(datos: schemas.EncargadoCreate, db: Session = Depends(databa
                                 refugio_id=refugio.id, refugio_nombre=refugio.nombre)
 
 
+def _eliminar_usuario(db: Session, u: models.Usuario, forzar: bool, quien: str) -> None:
+    """Elimina una cuenta. Con historial (adopciones o compras) solo si [forzar]: en ese caso se borra
+    TODO lo suyo (solicitudes con sus seguimientos, pedidos con su detalle) y las mascotas que había
+    adoptado vuelven a quedar disponibles."""
+    S, O = models.SolicitudAdopcion, models.OrdenCompra
+    solicitudes = db.query(S).filter(S.usuario_id == u.id).all()
+    ordenes = db.query(O).filter(O.usuario_id == u.id).all()
+    if (solicitudes or ordenes) and not forzar:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail=f"{quien} tiene solicitudes de adopción o compras registradas; "
+                                   "no se puede eliminar sin borrar también ese historial")
+    for s in solicitudes:
+        db.query(models.SeguimientoAdopcion).filter(models.SeguimientoAdopcion.solicitud_id == s.id).delete()
+        if s.estado == ESTADO_APROBADA:
+            mascota = db.query(models.Mascota).filter(models.Mascota.id == s.mascota_id).first()
+            if mascota and mascota.estado_adopcion == "Adoptada":
+                mascota.estado_adopcion = "Disponible"
+        db.delete(s)
+    for o in ordenes:
+        db.query(models.DetalleOrden).filter(models.DetalleOrden.orden_id == o.id).delete()
+        db.delete(o)
+    # Lo que esta persona resolvió como encargado se conserva (sin su nombre)
+    db.query(S).filter(S.resuelto_por_id == u.id).update({S.resuelto_por_id: None})
+    db.query(models.FavoritoMascota).filter(models.FavoritoMascota.usuario_id == u.id).delete()
+    db.query(models.SeleccionProducto).filter(models.SeleccionProducto.usuario_id == u.id).delete()
+    foto = u.foto_url
+    db.delete(u)
+    db.commit()
+    imagenes.limpiar(db, foto)
+
+
+def _encargado_o_404(db: Session, encargado_id: int) -> models.Usuario:
+    e = db.query(models.Usuario).filter(models.Usuario.id == encargado_id,
+                                        models.Usuario.rol_id == security.ROL_ENCARGADO).first()
+    if not e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="El encargado no existe")
+    return e
+
+
+def _encargado_out(db: Session, e: models.Usuario) -> schemas.EncargadoOut:
+    refugio = db.query(models.Refugio).filter(models.Refugio.id == e.refugio_id).first() if e.refugio_id else None
+    return schemas.EncargadoOut(id=e.id, nombre_completo=e.nombre_completo, email=e.email,
+                                refugio_id=e.refugio_id, refugio_nombre=refugio.nombre if refugio else None)
+
+
+@router.put("/encargados/{encargado_id}", response_model=schemas.EncargadoOut)
+def editar_encargado(encargado_id: int, datos: schemas.EncargadoUpdate, db: Session = Depends(database.get_db)):
+    e = _encargado_o_404(db, encargado_id)
+    cambios = datos.model_dump(exclude_unset=True, exclude_none=True)
+    if "email" in cambios and cambios["email"] != e.email and db.query(models.Usuario.id).filter(
+            models.Usuario.email == cambios["email"], models.Usuario.rol_id == security.ROL_ENCARGADO).first():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ese correo ya está registrado")
+    if "refugio_id" in cambios and not db.query(models.Refugio.id).filter(
+            models.Refugio.id == cambios["refugio_id"]).first():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="El refugio no existe")
+    if "password" in cambios:
+        e.password_hash = security.hash_password(cambios.pop("password"))
+    for campo, valor in cambios.items():
+        setattr(e, campo, valor)
+    db.commit()
+    db.refresh(e)
+    return _encargado_out(db, e)
+
+
+@router.delete("/encargados/{encargado_id}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar_encargado(encargado_id: int, forzar: bool = Query(False), db: Session = Depends(database.get_db)):
+    _eliminar_usuario(db, _encargado_o_404(db, encargado_id), forzar, "Este encargado")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 # ---------- Clientes (usuarios con rol "Usuario"): ver, buscar, editar y eliminar ----------
 def _cliente_o_404(db: Session, cliente_id: int) -> models.Usuario:
     c = db.query(models.Usuario).filter(models.Usuario.id == cliente_id,
@@ -314,17 +235,6 @@ def editar_cliente(cliente_id: int, datos: schemas.ClienteUpdate, db: Session = 
 
 
 @router.delete("/clientes/{cliente_id}", status_code=status.HTTP_204_NO_CONTENT)
-def eliminar_cliente(cliente_id: int, db: Session = Depends(database.get_db)):
-    cliente = _cliente_o_404(db, cliente_id)
-    tiene_historial = (db.query(models.SolicitudAdopcion.id).filter(models.SolicitudAdopcion.usuario_id == cliente.id).first()
-                       or db.query(models.OrdenCompra.id).filter(models.OrdenCompra.usuario_id == cliente.id).first())
-    if tiene_historial:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-                            detail="Este cliente tiene solicitudes de adopción o compras registradas; no se puede eliminar")
-    foto = cliente.foto_url
-    db.query(models.FavoritoMascota).filter(models.FavoritoMascota.usuario_id == cliente.id).delete()
-    db.query(models.SeleccionProducto).filter(models.SeleccionProducto.usuario_id == cliente.id).delete()
-    db.delete(cliente)
-    db.commit()
-    imagenes.limpiar(db, foto)
+def eliminar_cliente(cliente_id: int, forzar: bool = Query(False), db: Session = Depends(database.get_db)):
+    _eliminar_usuario(db, _cliente_o_404(db, cliente_id), forzar, "Este cliente")
     return Response(status_code=status.HTTP_204_NO_CONTENT)

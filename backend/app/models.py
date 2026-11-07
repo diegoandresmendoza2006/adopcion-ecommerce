@@ -88,6 +88,8 @@ class SolicitudAdopcion(Base):
     # --- Respuesta del encargado (la ve el adoptante) ---
     comentario_encargado = Column(Text)
     fecha_respuesta = Column(TIMESTAMP)
+    # Quién aprobó o rechazó (su nombre sale firmando el certificado de adopción)
+    resuelto_por_id = Column(Integer, ForeignKey("adopcion.usuarios.id", ondelete="SET NULL"), nullable=True)
 
 
 class SeguimientoAdopcion(Base):
