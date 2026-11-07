@@ -8,6 +8,7 @@ jamás puede viajar al navegador. Por eso Angular le manda la foto al backend, y
 Así no quedan imágenes huérfanas ("basura") en Cloudinary.
 
 Jerarquía de carpetas (todo cuelga de content/pawsshop):
+    content/pawsshop/perfiles/user_<id>/<uuid>
     content/pawsshop/mascotas/<especie>/<raza>/user_<id>/<uuid>
     content/pawsshop/productos/<categoria>/user_<id>/<uuid>
 """
@@ -32,7 +33,7 @@ API_KEY = os.getenv("CLOUDINARY_API_KEY", "")
 API_SECRET = os.getenv("CLOUDINARY_API_SECRET", "")
 RAIZ = os.getenv("CLOUDINARY_ROOT_FOLDER", "content/pawsshop").strip("/")
 
-TIPOS = ("mascotas", "productos")
+TIPOS = ("mascotas", "productos")   # (las fotos de perfil se suben por /auth/me/foto)
 MAX_BYTES = 5 * 1024 * 1024
 
 
@@ -58,6 +59,8 @@ def slug(texto: Optional[str], por_defecto: str = "sin-clasificar") -> str:
 
 
 def carpeta_para(tipo: str, usuario_id: int, subcarpeta: Optional[str] = None, especie: Optional[str] = None) -> str:
+    if tipo == "perfiles":
+        return f"{RAIZ}/perfiles/user_{usuario_id}"
     if tipo == "mascotas":
         return f"{RAIZ}/mascotas/{slug(especie, 'otro')}/{slug(subcarpeta, 'mestizo')}/user_{usuario_id}"
     return f"{RAIZ}/productos/{slug(subcarpeta)}/user_{usuario_id}"
@@ -92,7 +95,8 @@ def public_id_de(url: Optional[str]) -> Optional[str]:
 
 def en_uso(db: Session, url: str) -> bool:
     return bool(db.query(models.Mascota.id).filter(models.Mascota.imagen_url == url).first()
-                or db.query(models.Producto.id).filter(models.Producto.imagen_url == url).first())
+                or db.query(models.Producto.id).filter(models.Producto.imagen_url == url).first()
+                or db.query(models.Usuario.id).filter(models.Usuario.foto_url == url).first())
 
 
 def borrar(url: Optional[str]) -> bool:

@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from .. import schemas
 from .. import database
 from .. import models
 from .. import security
+from ..paginacion import paginar
 from .adopciones import ESTADO_APROBADA
 
 router = APIRouter(prefix="/seguimientos", tags=["Seguimiento post-adopción"])
@@ -46,15 +47,18 @@ def crear_seguimiento(datos: schemas.SeguimientoCreate, db: Session = Depends(da
 
 
 @router.get("/mis", response_model=List[schemas.SeguimientoOut])
-def mis_seguimientos(db: Session = Depends(database.get_db), usuario: models.Usuario = Depends(security.require_usuario)):
-    filas = (_consulta(db).filter(models.SolicitudAdopcion.usuario_id == usuario.id)
-             .order_by(models.SeguimientoAdopcion.id.desc()).all())
+def mis_seguimientos(response: Response, pagina: Optional[int] = Query(None, ge=1), por_pagina: int = Query(20, ge=1, le=100),
+                     db: Session = Depends(database.get_db), usuario: models.Usuario = Depends(security.require_usuario)):
+    filas = paginar(_consulta(db).filter(models.SolicitudAdopcion.usuario_id == usuario.id)
+                    .order_by(models.SeguimientoAdopcion.id.desc()), response, pagina, por_pagina)
     return [_a_out(f) for f in filas]
 
 
 @router.get("/", response_model=List[schemas.SeguimientoOut])
-def todos_los_seguimientos(db: Session = Depends(database.get_db), usuario: models.Usuario = Depends(security.require_staff)):
+def todos_los_seguimientos(response: Response, pagina: Optional[int] = Query(None, ge=1), por_pagina: int = Query(20, ge=1, le=100),
+                           db: Session = Depends(database.get_db), usuario: models.Usuario = Depends(security.require_staff)):
     consulta = _consulta(db)
     if usuario.rol_id == security.ROL_ENCARGADO and usuario.refugio_id:
         consulta = consulta.filter(models.Mascota.refugio_id == usuario.refugio_id)
-    return [_a_out(f) for f in consulta.order_by(models.SeguimientoAdopcion.id.desc()).all()]
+    filas = paginar(consulta.order_by(models.SeguimientoAdopcion.id.desc()), response, pagina, por_pagina)
+    return [_a_out(f) for f in filas]

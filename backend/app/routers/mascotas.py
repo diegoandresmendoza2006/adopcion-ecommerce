@@ -1,5 +1,5 @@
 import math
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import case, func
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -8,6 +8,7 @@ from .. import models
 from .. import security
 from ..database import get_db
 from .. import imagenes
+from ..paginacion import paginar
 
 router = APIRouter(prefix="/mascotas", tags=["Mascotas"])
 
@@ -104,11 +105,18 @@ def buscar_mascotas(
 
 
 @router.get("/gestion/inventario", response_model=List[schemas.MascotaOut])
-def inventario_del_refugio(db: Session = Depends(get_db), usuario: models.Usuario = Depends(security.require_staff)):
+def inventario_del_refugio(response: Response, buscar: Optional[str] = Query(None, max_length=60),
+                           estado: Optional[str] = Query(None, max_length=30),
+                           pagina: Optional[int] = Query(None, ge=1), por_pagina: int = Query(20, ge=1, le=100),
+                           db: Session = Depends(get_db), usuario: models.Usuario = Depends(security.require_staff)):
     query = db.query(models.Mascota)
     if usuario.rol_id == security.ROL_ENCARGADO and usuario.refugio_id:
         query = query.filter(models.Mascota.refugio_id == usuario.refugio_id)
-    return query.order_by(models.Mascota.id).all()
+    if buscar and buscar.strip():
+        query = query.filter(models.Mascota.nombre.ilike(_like(buscar.strip()), escape="\\"))
+    if estado and estado.strip():
+        query = query.filter(models.Mascota.estado_adopcion == estado.strip())
+    return paginar(query.order_by(models.Mascota.id.desc() if pagina else models.Mascota.id), response, pagina, por_pagina)
 
 
 @router.get("/{mascota_id}", response_model=schemas.MascotaOut)

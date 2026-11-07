@@ -12,6 +12,9 @@ from .routers import compras
 from .routers import seguimientos
 from .routers import admin
 from .routers import imagenes
+from .routers import favoritos
+from sqlalchemy import text
+from .database import SessionLocal
 
 app = FastAPI(title="API - Adopción y E-commerce")
 
@@ -27,6 +30,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Total-Count"],   # la app móvil lee el total de filas de esta cabecera
 )
 
 # Incluimos todos los routers incluyendo productos
@@ -39,6 +43,19 @@ app.include_router(compras.router)
 app.include_router(seguimientos.router)
 app.include_router(admin.router)
 app.include_router(imagenes.router)
+app.include_router(favoritos.router)
+
+@app.get("/health", tags=["Sonda"])
+def health():
+    """Sonda de salud. La consulta un programador (GitHub Actions / UptimeRobot) a la hora o intervalo que quieras:
+    despierta el servidor de Render y la base de datos de Neon antes de que alguien abra la app."""
+    try:
+        with SessionLocal() as db:
+            db.execute(text("SELECT 1"))
+        return {"estado": "ok", "base_de_datos": "ok"}
+    except Exception:
+        return {"estado": "ok", "base_de_datos": "sin conexion"}
+
 
 @app.get("/")
 def read_root():

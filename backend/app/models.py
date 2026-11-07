@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, Numeric, TIMESTAMP, JSON, Boolean, Date
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, Numeric, TIMESTAMP, JSON, Boolean, Date, UniqueConstraint
 from sqlalchemy.sql import func
 from .database import Base
 
@@ -18,10 +18,12 @@ class Refugio(Base):
 
 class Usuario(Base):
     __tablename__ = "usuarios"
-    __table_args__ = {'schema': 'adopcion'}
+    # El correo ya NO es único solo: una misma persona puede tener dos cuentas (p. ej. Encargado y Usuario).
+    # Lo único es la pareja (correo, rol).
+    __table_args__ = (UniqueConstraint("email", "rol_id", name="uq_usuarios_email_rol"), {'schema': 'adopcion'})
     id = Column(Integer, primary_key=True, index=True)
     nombre_completo = Column(String(100), nullable=False)
-    email = Column(String(100), unique=True, nullable=False)
+    email = Column(String(100), nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
     rol_id = Column(Integer, ForeignKey("adopcion.roles.id"), nullable=False)
     refugio_id = Column(Integer, ForeignKey("adopcion.refugios.id"))
@@ -30,6 +32,17 @@ class Usuario(Base):
     fecha_nacimiento = Column(Date)
     telefono = Column(String(30))
     direccion = Column(String(255))
+    # Documento de identidad (CC, CE o PAS) y foto de perfil (URL de Cloudinary)
+    tipo_documento = Column(String(5))
+    numero_documento = Column(String(20))
+    foto_url = Column(Text)
+
+class FavoritoMascota(Base):
+    __tablename__ = "favoritos_mascotas"
+    __table_args__ = {'schema': 'adopcion'}
+    usuario_id = Column(Integer, ForeignKey("adopcion.usuarios.id", ondelete="CASCADE"), primary_key=True)
+    mascota_id = Column(Integer, ForeignKey("adopcion.mascotas.id", ondelete="CASCADE"), primary_key=True)
+    fecha = Column(TIMESTAMP, server_default=func.now())
 
 class Mascota(Base):
     __tablename__ = "mascotas"

@@ -1,0 +1,44 @@
+# =============================================================================
+# SONDA: despierta el backend (Render) y la base de datos (Neon) a la hora que tú elijas.
+#
+# Por qué: el plan gratis de Render duerme el servidor tras ~15 min sin visitas y la primera
+# petición tarda hasta ~1 minuto. Esta sonda llama a /health para que, cuando alguien abra la app,
+# el servidor ya esté despierto y cargue en menos de 30 segundos.
+#
+# CÓMO CONFIGURAR LA HORA / EL INTERVALO: cambia la línea `cron` (5 campos: minuto hora día mes día-semana).
+# GitHub usa hora UTC; Colombia es UTC-5, así que 12:00 en Colombia = 17:00 UTC.
+#
+#   '0 17 * * *'          -> todos los días a las 12:00 (hora Colombia)
+#   '*/10 12-23 * * *'    -> cada 10 minutos de 7:00 a.m. a 6:59 p.m. (hora Colombia)  [mantiene despierto el servidor]
+#   '*/14 * * * *'        -> cada 14 minutos todo el día
+#
+# Actívala una vez: en GitHub -> pestaña Actions -> "Sonda keep-alive" -> Enable workflow.
+# Pruébala a mano: Actions -> Sonda keep-alive -> Run workflow.
+# La dirección del backend está en la variable de repositorio API_URL (Settings -> Secrets and variables
+# -> Actions -> Variables). Si no existe, usa la de abajo.
+# =============================================================================
+name: Sonda keep-alive
+
+on:
+  schedule:
+    - cron: '0 17 * * *'          # todos los días a las 12:00 (Colombia)
+    - cron: '*/10 12-23 * * *'    # y cada 10 min entre 7:00 a.m. y 6:59 p.m. (Colombia)
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Llamar a /health (hasta 4 intentos, 30 s cada uno)
+        env:
+          API_URL: ${{ vars.API_URL || 'https://paws-shop-api.onrender.com' }}
+        run: |
+          for i in 1 2 3 4; do
+            echo "Intento $i -> $API_URL/health"
+            if curl --fail --silent --show-error --max-time 30 "$API_URL/health"; then
+              echo; echo "Servidor despierto"; exit 0
+            fi
+            sleep 5
+          done
+          echo "El servidor no respondió"; exit 1

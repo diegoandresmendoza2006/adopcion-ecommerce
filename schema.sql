@@ -533,7 +533,10 @@ CREATE TABLE adopcion.usuarios (
     fecha_registro timestamp without time zone DEFAULT now() NOT NULL,
     fecha_nacimiento date,
     telefono character varying(30),
-    direccion character varying(255)
+    direccion character varying(255),
+    tipo_documento character varying(5),
+    numero_documento character varying(20),
+    foto_url text
 );
 
 
@@ -754,11 +757,10 @@ ALTER TABLE ONLY adopcion.solicitudes_adopcion
 
 
 --
--- Name: usuarios usuarios_email_key; Type: CONSTRAINT; Schema: adopcion; Owner: -
+-- Name: uq_usuarios_email_rol; Type: INDEX (una persona puede tener 2 cuentas: correo + rol); Schema: adopcion
 --
 
-ALTER TABLE ONLY adopcion.usuarios
-    ADD CONSTRAINT usuarios_email_key UNIQUE (email);
+CREATE UNIQUE INDEX uq_usuarios_email_rol ON adopcion.usuarios USING btree (email, rol_id);
 
 
 --
@@ -1263,3 +1265,16 @@ GRANT ALL ON SEQUENCE adopcion.usuarios_id_seq TO usuario_adopcion;
 
 \unrestrict XNN4bkMgoivfHdD9t3XICiFxF36zN12c6QbKoNgdFhgZ8SQfcIPprss1W4Q8syg
 
+
+--
+-- Name: favoritos_mascotas; Type: TABLE; Schema: adopcion (migración 004)
+--
+
+CREATE TABLE adopcion.favoritos_mascotas (
+    usuario_id integer NOT NULL REFERENCES adopcion.usuarios(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    mascota_id integer NOT NULL REFERENCES adopcion.mascotas(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    fecha timestamp without time zone DEFAULT now(),
+    PRIMARY KEY (usuario_id, mascota_id)
+);
+
+GRANT ALL ON TABLE adopcion.favoritos_mascotas TO usuario_adopcion;

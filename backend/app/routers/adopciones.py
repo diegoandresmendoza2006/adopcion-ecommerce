@@ -1,11 +1,12 @@
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from .. import schemas
 from .. import database
 from .. import models
 from .. import security
+from ..paginacion import like, paginar
 
 router = APIRouter(prefix="/adopciones", tags=["Solicitudes de Adopción"])
 
@@ -87,19 +88,32 @@ def crear_solicitud(solicitud: schemas.SolicitudAdopcionCreate, db: Session = De
 
 
 @router.get("/mis", response_model=List[schemas.SolicitudDetalleOut])
-def mis_solicitudes(db: Session = Depends(database.get_db), usuario: models.Usuario = Depends(security.get_current_user)):
-    filas = (_consulta_detalle(db)
-             .filter(models.SolicitudAdopcion.usuario_id == usuario.id)
-             .order_by(models.SolicitudAdopcion.id.desc()).all())
+def mis_solicitudes(response: Response, estado: Optional[str] = Query(None, max_length=30),
+                    pagina: Optional[int] = Query(None, ge=1), por_pagina: int = Query(20, ge=1, le=100),
+                    db: Session = Depends(database.get_db), usuario: models.Usuario = Depends(security.get_current_user)):
+    consulta = _consulta_detalle(db).filter(models.SolicitudAdopcion.usuario_id == usuario.id)
+    if estado and estado.strip():
+        consulta = consulta.filter(models.SolicitudAdopcion.estado == estado.strip())
+    filas = paginar(consulta.order_by(models.SolicitudAdopcion.id.desc()), response, pagina, por_pagina)
     return [_a_detalle(f) for f in filas]
 
 
 @router.get("/", response_model=List[schemas.SolicitudDetalleOut])
-def obtener_solicitudes(db: Session = Depends(database.get_db), usuario: models.Usuario = Depends(security.require_staff)):
+def obtener_solicitudes(response: Response, estado: Optional[str] = Query(None, max_length=30),
+                        buscar: Optional[str] = Query(None, max_length=60, description="Nombre de la mascota o del adoptante"),
+                        pagina: Optional[int] = Query(None, ge=1), por_pagina: int = Query(20, ge=1, le=100),
+                        db: Session = Depends(database.get_db), usuario: models.Usuario = Depends(security.require_staff)):
     consulta = _consulta_detalle(db)
     if usuario.rol_id == security.ROL_ENCARGADO and usuario.refugio_id:
         consulta = consulta.filter(models.Mascota.refugio_id == usuario.refugio_id)
-    return [_a_detalle(f) for f in consulta.order_by(models.SolicitudAdopcion.id.desc()).all()]
+    if estado and estado.strip():
+        consulta = consulta.filter(models.SolicitudAdopcion.estado == estado.strip())
+    if buscar and buscar.strip():
+        patron = like(buscar.strip())
+        consulta = consulta.filter(models.Mascota.nombre.ilike(patron, escape="\\")
+                                   | models.Usuario.nombre_completo.ilike(patron, escape="\\"))
+    filas = paginar(consulta.order_by(models.SolicitudAdopcion.id.desc()), response, pagina, por_pagina)
+    return [_a_detalle(f) for f in filas]
 
 
 @router.get("/mascota/{mascota_id}", response_model=List[schemas.SolicitanteOut])

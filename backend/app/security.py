@@ -48,6 +48,19 @@ def create_access_token(data: dict):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
+def cuentas_del_token(token: str = Depends(oauth2_scheme)) -> list:
+    """Ids de las cuentas que esta sesión puede usar (la persona inició sesión con la contraseña de todas)."""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Sesión inválida o expirada",
+                            headers={"WWW-Authenticate": "Bearer"})
+    ids = payload.get("cuentas")
+    if not ids and payload.get("usuario_id") is not None:
+        ids = [payload["usuario_id"]]
+    return [int(i) for i in (ids or [])]
+
+
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> models.Usuario:
     """Valida el token JWT y devuelve el usuario logueado."""
     error = HTTPException(

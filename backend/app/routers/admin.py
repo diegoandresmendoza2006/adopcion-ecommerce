@@ -1,8 +1,9 @@
 import io
+import math
 import re
 from datetime import datetime
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from fastapi.responses import Response
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
@@ -12,7 +13,9 @@ from sqlalchemy.orm import Session
 from .. import schemas
 from .. import database
 from .. import models
+from .. import imagenes
 from .. import security
+from ..paginacion import like, paginar
 from .adopciones import ESTADO_APROBADA
 
 router = APIRouter(prefix="/admin", tags=["Administración"], dependencies=[Depends(security.require_admin)])
@@ -191,35 +194,137 @@ def reporte_excel(mes: Optional[str] = Query(None, pattern=PATRON_MES), db: Sess
 
 
 @router.get("/auditoria", response_model=List[schemas.AuditoriaOut])
-def auditoria(db: Session = Depends(database.get_db)):
-    return db.query(models.Auditoria).order_by(models.Auditoria.id.desc()).limit(200).all()
+def auditoria(response: Response, buscar: Optional[str] = Query(None, max_length=60),
+              accion: Optional[str] = Query(None, max_length=20), tabla: Optional[str] = Query(None, max_length=50),
+              pagina: Optional[int] = Query(None, ge=1), por_pagina: int = Query(20, ge=1, le=100),
+              db: Session = Depends(database.get_db)):
+    """Sin ?pagina devuelve los últimos 200 (como antes). Con ?pagina=N devuelve un bloque (scroll infinito)."""
+    A = models.Auditoria
+    consulta = db.query(A)
+    if buscar and buscar.strip():
+        consulta = consulta.filter(A.nombre_usuario.ilike(like(buscar.strip()), escape="\\"))
+    if accion and accion.strip():
+        consulta = consulta.filter(A.accion == accion.strip().upper())
+    if tabla and tabla.strip():
+        consulta = consulta.filter(A.tabla_afectada == tabla.strip())
+    consulta = consulta.order_by(A.id.desc())
+    if pagina is None:
+        return consulta.limit(200).all()
+    return paginar(consulta, response, pagina, por_pagina)
 
 
 @router.get("/encargados", response_model=List[schemas.EncargadoOut])
-def listar_encargados(db: Session = Depends(database.get_db)):
-    filas = (db.query(models.Usuario, models.Refugio)
-             .outerjoin(models.Refugio, models.Refugio.id == models.Usuario.refugio_id)
-             .filter(models.Usuario.rol_id == security.ROL_ENCARGADO)
-             .order_by(models.Usuario.id).all())
+def listar_encargados(response: Response, buscar: Optional[str] = Query(None, max_length=60),
+                      pagina: Optional[int] = Query(None, ge=1), por_pagina: int = Query(20, ge=1, le=100),
+                      db: Session = Depends(database.get_db)):
+    consulta = (db.query(models.Usuario, models.Refugio)
+                .outerjoin(models.Refugio, models.Refugio.id == models.Usuario.refugio_id)
+                .filter(models.Usuario.rol_id == security.ROL_ENCARGADO))
+    if buscar and buscar.strip():
+        patron = like(buscar.strip())
+        consulta = consulta.filter(models.Usuario.nombre_completo.ilike(patron, escape="\\")
+                                   | models.Usuario.email.ilike(patron, escape="\\"))
+    filas = paginar(consulta.order_by(models.Usuario.id), response, pagina, por_pagina)
     return [schemas.EncargadoOut(id=u.id, nombre_completo=u.nombre_completo, email=u.email,
                                  refugio_id=u.refugio_id, refugio_nombre=r.nombre if r else None) for u, r in filas]
 
 
 @router.post("/encargados", status_code=status.HTTP_201_CREATED, response_model=schemas.EncargadoOut)
 def crear_encargado(datos: schemas.EncargadoCreate, db: Session = Depends(database.get_db)):
-    if db.query(models.Usuario).filter(models.Usuario.email == datos.email).first():
+    existentes = db.query(models.Usuario).filter(models.Usuario.email == datos.email).all()
+    if any(u.rol_id != security.ROL_USUARIO for u in existentes):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El correo ya está registrado")
     refugio = db.query(models.Refugio).filter(models.Refugio.id == datos.refugio_id).first()
     if not refugio:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="El refugio no existe")
 
+    # Si esa persona ya tiene cuenta de Usuario, la cuenta de Encargado comparte su contraseña y sus datos:
+    # al iniciar sesión el sistema detecta las dos cuentas y le deja elegir cómo entrar.
+    previa = existentes[0] if existentes else None
     nuevo = models.Usuario(
-        nombre_completo=datos.nombre_completo, email=datos.email,
-        password_hash=security.hash_password(datos.password),
+        nombre_completo=previa.nombre_completo if previa else datos.nombre_completo, email=datos.email,
+        password_hash=previa.password_hash if previa else security.hash_password(datos.password),
         rol_id=security.ROL_ENCARGADO, refugio_id=refugio.id,
+        fecha_nacimiento=previa.fecha_nacimiento if previa else None,
+        telefono=previa.telefono if previa else None, direccion=previa.direccion if previa else None,
+        tipo_documento=previa.tipo_documento if previa else None,
+        numero_documento=previa.numero_documento if previa else None,
+        foto_url=previa.foto_url if previa else None,
     )
     db.add(nuevo)
     db.commit()
     db.refresh(nuevo)
     return schemas.EncargadoOut(id=nuevo.id, nombre_completo=nuevo.nombre_completo, email=nuevo.email,
                                 refugio_id=refugio.id, refugio_nombre=refugio.nombre)
+
+
+# ---------- Clientes (usuarios con rol "Usuario"): ver, buscar, editar y eliminar ----------
+def _cliente_o_404(db: Session, cliente_id: int) -> models.Usuario:
+    c = db.query(models.Usuario).filter(models.Usuario.id == cliente_id,
+                                        models.Usuario.rol_id == security.ROL_USUARIO).first()
+    if not c:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="El cliente no existe")
+    return c
+
+
+@router.get("/clientes", response_model=schemas.PaginaClientes)
+def listar_clientes(buscar: Optional[str] = Query(None, max_length=60), pagina: int = Query(1, ge=1),
+                    por_pagina: int = Query(20, ge=1, le=100), db: Session = Depends(database.get_db)):
+    """Consulta de clientes: busca por nombre, correo, documento o teléfono."""
+    U = models.Usuario
+    consulta = db.query(U).filter(U.rol_id == security.ROL_USUARIO)
+    if buscar and buscar.strip():
+        patron = like(buscar.strip())
+        consulta = consulta.filter(U.nombre_completo.ilike(patron, escape="\\") | U.email.ilike(patron, escape="\\")
+                                   | U.numero_documento.ilike(patron, escape="\\") | U.telefono.ilike(patron, escape="\\"))
+    total = consulta.count()
+    items = consulta.order_by(U.id.desc()).offset((pagina - 1) * por_pagina).limit(por_pagina).all()
+    return {"items": items, "total": total, "pagina": pagina, "por_pagina": por_pagina,
+            "paginas": max(1, math.ceil(total / por_pagina))}
+
+
+@router.get("/clientes/{cliente_id}", response_model=schemas.UsuarioOut)
+def ver_cliente(cliente_id: int, db: Session = Depends(database.get_db)):
+    return _cliente_o_404(db, cliente_id)
+
+
+@router.put("/clientes/{cliente_id}", response_model=schemas.UsuarioOut)
+def editar_cliente(cliente_id: int, datos: schemas.ClienteUpdate, db: Session = Depends(database.get_db)):
+    cliente = _cliente_o_404(db, cliente_id)
+    cambios = {k: v for k, v in datos.model_dump(exclude_unset=True).items()
+               if v is not None or k in ("telefono", "direccion", "fecha_nacimiento")}
+    if ("tipo_documento" in cambios) != ("numero_documento" in cambios):
+        raise HTTPException(status_code=422, detail="Indica el tipo y el número de documento")
+    nuevo_correo = cambios.get("email", cliente.email)
+    if nuevo_correo != cliente.email and db.query(models.Usuario.id).filter(
+            models.Usuario.email == nuevo_correo, models.Usuario.rol_id == security.ROL_USUARIO).first():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ese correo ya está registrado")
+    if "numero_documento" in cambios:
+        cambios["numero_documento"] = cambios["numero_documento"].upper()
+        if db.query(models.Usuario.id).filter(
+                models.Usuario.tipo_documento == cambios["tipo_documento"],
+                models.Usuario.numero_documento == cambios["numero_documento"],
+                models.Usuario.email != nuevo_correo).first():
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ese documento ya está registrado con otro correo")
+    for campo, valor in cambios.items():
+        setattr(cliente, campo, valor)
+    db.commit()
+    db.refresh(cliente)
+    return cliente
+
+
+@router.delete("/clientes/{cliente_id}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar_cliente(cliente_id: int, db: Session = Depends(database.get_db)):
+    cliente = _cliente_o_404(db, cliente_id)
+    tiene_historial = (db.query(models.SolicitudAdopcion.id).filter(models.SolicitudAdopcion.usuario_id == cliente.id).first()
+                       or db.query(models.OrdenCompra.id).filter(models.OrdenCompra.usuario_id == cliente.id).first())
+    if tiene_historial:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="Este cliente tiene solicitudes de adopción o compras registradas; no se puede eliminar")
+    foto = cliente.foto_url
+    db.query(models.FavoritoMascota).filter(models.FavoritoMascota.usuario_id == cliente.id).delete()
+    db.query(models.SeleccionProducto).filter(models.SeleccionProducto.usuario_id == cliente.id).delete()
+    db.delete(cliente)
+    db.commit()
+    imagenes.limpiar(db, foto)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

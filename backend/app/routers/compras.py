@@ -1,11 +1,13 @@
 from decimal import Decimal
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 from typing import List
 from .. import schemas
 from .. import database
 from .. import models
 from .. import security
+from ..paginacion import paginar
 
 router = APIRouter(prefix="/compras", tags=["E-commerce - Compras"])
 
@@ -51,7 +53,8 @@ def procesar_compra(compra: schemas.CompraCreate, db: Session = Depends(database
 
 
 @router.get("/mis", response_model=List[schemas.OrdenOut])
-def mis_compras(db: Session = Depends(database.get_db), usuario: models.Usuario = Depends(security.require_usuario)):
-    return (db.query(models.OrdenCompra)
-            .filter(models.OrdenCompra.usuario_id == usuario.id)
-            .order_by(models.OrdenCompra.id.desc()).all())
+def mis_compras(response: Response, pagina: Optional[int] = Query(None, ge=1), por_pagina: int = Query(20, ge=1, le=100),
+                db: Session = Depends(database.get_db), usuario: models.Usuario = Depends(security.require_usuario)):
+    return paginar(db.query(models.OrdenCompra)
+                   .filter(models.OrdenCompra.usuario_id == usuario.id)
+                   .order_by(models.OrdenCompra.id.desc()), response, pagina, por_pagina)

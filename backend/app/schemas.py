@@ -1,11 +1,26 @@
 from pydantic import BaseModel, EmailStr, ConfigDict, Field, field_validator, model_validator
 from datetime import date, datetime
-from typing import Literal, Optional
+from typing import List, Literal, Optional
 
 
 # ----------------------------------------
 # ESQUEMAS DE USUARIO
 # ----------------------------------------
+
+TipoDocumento = Literal["CC", "CE", "PAS"]   # Cédula, Cédula de extranjería, Pasaporte
+
+
+def _validar_edad(v: Optional[date]) -> Optional[date]:
+    if v is None:
+        return v
+    hoy = date.today()
+    edad = hoy.year - v.year - ((hoy.month, hoy.day) < (v.month, v.day))
+    if edad < 18:
+        raise ValueError("Debes ser mayor de 18 años")
+    if edad > 110:
+        raise ValueError("La fecha de nacimiento no es válida")
+    return v
+
 
 class UsuarioCreate(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -19,19 +34,23 @@ class UsuarioCreate(BaseModel):
     fecha_nacimiento: Optional[date] = None
     telefono: Optional[str] = Field(default=None, min_length=7, max_length=30)
     direccion: Optional[str] = Field(default=None, min_length=5, max_length=255)
+    tipo_documento: Optional[TipoDocumento] = None
+    numero_documento: Optional[str] = Field(default=None, pattern=r"^[A-Za-z0-9]{5,20}$")
 
     @field_validator("fecha_nacimiento")
     @classmethod
     def mayor_de_edad(cls, v: Optional[date]) -> Optional[date]:
-        if v is None:
-            return v
-        hoy = date.today()
-        edad = hoy.year - v.year - ((hoy.month, hoy.day) < (v.month, v.day))
-        if edad < 18:
-            raise ValueError("Debes ser mayor de 18 años para registrarte")
-        if edad > 110:
-            raise ValueError("La fecha de nacimiento no es válida")
-        return v
+        try:
+            return _validar_edad(v)
+        except ValueError as e:
+            raise ValueError(f"{e} para registrarte" if "18" in str(e) else str(e))
+
+    @model_validator(mode="after")
+    def documento_completo(self):
+        if (self.tipo_documento is None) != (self.numero_documento is None):
+            raise ValueError("Indica el tipo y el número de documento")
+        return self
+
 
 class UsuarioOut(BaseModel):
     id: int
@@ -43,17 +62,70 @@ class UsuarioOut(BaseModel):
     fecha_nacimiento: Optional[date] = None
     telefono: Optional[str] = None
     direccion: Optional[str] = None
+    tipo_documento: Optional[str] = None
+    numero_documento: Optional[str] = None
+    foto_url: Optional[str] = None
 
     class Config:
         from_attributes = True
+
+
+class PerfilUpdate(BaseModel):
+    """Lo que el usuario puede cambiar de sí mismo (todo opcional: solo se actualiza lo que llegue)."""
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    nombre_completo: Optional[str] = Field(default=None, min_length=2, max_length=100)
+    fecha_nacimiento: Optional[date] = None
+    telefono: Optional[str] = Field(default=None, min_length=7, max_length=30)
+    direccion: Optional[str] = Field(default=None, min_length=5, max_length=255)
+    tipo_documento: Optional[TipoDocumento] = None
+    numero_documento: Optional[str] = Field(default=None, pattern=r"^[A-Za-z0-9]{5,20}$")
+
+    @field_validator("fecha_nacimiento")
+    @classmethod
+    def mayor_de_edad(cls, v: Optional[date]) -> Optional[date]:
+        return _validar_edad(v)
+
+
+class CambioPassword(BaseModel):
+    actual: str = Field(min_length=1, max_length=72)
+    nueva: str = Field(min_length=8, max_length=72)
+
+
+class ClienteUpdate(PerfilUpdate):
+    """El admin puede cambiar lo mismo que el usuario y además el correo."""
+    email: Optional[EmailStr] = None
+
+
+class PaginaClientes(BaseModel):
+    items: List["UsuarioOut"]
+    total: int
+    pagina: int
+    por_pagina: int
+    paginas: int
 
 # ----------------------------------------
 # ESQUEMAS DE AUTENTICACIÓN (JWT)
 # ----------------------------------------
 
+class CuentaOut(BaseModel):
+    """Una de las cuentas (roles) que tiene la misma persona."""
+    usuario_id: int
+    rol_id: int
+    rol: str
+    refugio_id: Optional[int] = None
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str
+    # Si la persona tiene más de una cuenta con este correo y contraseña, aquí vienen todas.
+    # Con más de una, la app debe preguntar "¿cómo quieres entrar?" y llamar a /auth/cambiar-rol.
+    cuentas: List[CuentaOut] = []
+
+
+class CambiarRol(BaseModel):
+    usuario_id: int
 
 class TokenData(BaseModel):
     id: Optional[str] = None
