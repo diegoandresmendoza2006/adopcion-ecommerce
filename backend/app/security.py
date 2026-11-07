@@ -22,7 +22,7 @@ if len(SECRET_KEY) < 16:
     )
 
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7   # 7 días: la app recuerda la sesión, así que el token debe durar
 
 # IDs de la tabla adopcion.roles  (verifica que coincidan con tu base de datos)
 ROL_ADMIN = 1
