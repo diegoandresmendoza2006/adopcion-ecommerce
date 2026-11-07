@@ -81,12 +81,17 @@ def _marco(c, ancho, alto):
     c.setStrokeColor(DORADO)
     c.setLineWidth(1.2)
     c.roundRect(32, 32, ancho - 64, alto - 64, 10, stroke=1, fill=0)
-    # Franja verde arriba y abajo
+    # Franja verde arriba y abajo, recortadas con las esquinas redondeadas del marco (sin sobresalir)
+    c.saveState()
+    recorte = c.beginPath()
+    recorte.roundRect(22, 22, ancho - 44, alto - 44, 14)
+    c.clipPath(recorte, stroke=0, fill=0)
     c.setFillColor(VERDE)
     c.rect(22, alto - 64, ancho - 44, 42, stroke=0, fill=1)
     c.rect(22, 22, ancho - 44, 18, stroke=0, fill=1)
+    c.restoreState()
     # Huellitas decorativas de fondo
-    for x, y, e in ((95, 120, 1.5), (ancho - 95, 120, 1.5), (ancho - 120, alto - 150, 1.0)):
+    for x, y, e in ((95, alto - 150, 1.0), (ancho - 95, alto - 150, 1.0)):   # lejos de las firmas
         _huella(c, x, y, e, VERDE_CLARO)
 
 
@@ -166,20 +171,20 @@ def generar_certificado(*, solicitud_id: int, adoptante: str, documento: str, ma
         y -= 14
 
     # Firmas
-    base = 92
+    base = 96
     c.setStrokeColor(GRIS)
     c.setLineWidth(0.8)
-    firmantes = ((ancho * 0.30, "Por el refugio", refugio, "Representante del refugio"),
-                 (ancho * 0.70, "Por Paws&Shop", "Diego Mendoza", "Gerente General"))
+    firmantes = ((ancho * 0.28, "Por el refugio", refugio, "Representante del refugio"),
+                 (ancho * 0.72, "Por Paws&Shop", "Diego Mendoza", "Gerente General"))
     for x, rotulo, nombre, cargo in firmantes:
         # La firma va en cursiva grande sobre la línea; debajo, el cargo/entidad
         c.setFillColor(HexColor("#1F3A5F"))
         tam = 30
-        while tam > 12 and c.stringWidth(_t(nombre), _FUENTE_FIRMA, tam) > 260:
+        while tam > 12 and c.stringWidth(_t(nombre), _FUENTE_FIRMA, tam) > 215:
             tam -= 1                      # nombres de refugio largos se achican para caber
         c.setFont(_FUENTE_FIRMA, tam)
         c.drawCentredString(x, base + 22, _t(nombre))
-        c.line(x - 90, base + 16, x + 90, base + 16)
+        c.line(x - 115, base + 16, x + 115, base + 16)
         c.setFillColor(GRIS)
         c.setFont("Helvetica", 10)
         c.drawCentredString(x, base, _t(cargo))
