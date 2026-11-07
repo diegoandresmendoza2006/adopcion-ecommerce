@@ -34,6 +34,13 @@ CREATE TABLE IF NOT EXISTS adopcion.favoritos_mascotas (
     fecha      timestamp without time zone DEFAULT now(),
     PRIMARY KEY (usuario_id, mascota_id)
 );
-GRANT ALL ON TABLE adopcion.favoritos_mascotas TO usuario_adopcion;
+-- Solo da permisos si el rol existe (en Neon puede llamarse distinto o no existir)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'usuario_adopcion') THEN
+        GRANT ALL ON TABLE adopcion.favoritos_mascotas TO usuario_adopcion;
+    END IF;
+END
+$$;
 
 COMMIT;

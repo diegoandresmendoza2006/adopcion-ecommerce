@@ -221,6 +221,15 @@ def test_inventario_con_busqueda(client, enc1):
     assert client.get("/mascotas/gestion/inventario?buscar=misi", headers=enc1).json() == []
 
 
+def test_inventario_del_admin_filtra_por_refugio(client, admin, enc1):
+    todas = client.get("/mascotas/gestion/inventario", headers=admin).json()
+    solo_1 = client.get("/mascotas/gestion/inventario?refugio_id=1", headers=admin).json()
+    assert len(todas) == 2 and [m["refugio_id"] for m in solo_1] == [1]
+    # el encargado no puede salirse de su refugio con ese filtro
+    del_enc = client.get("/mascotas/gestion/inventario?refugio_id=2", headers=enc1).json()
+    assert all(m["refugio_id"] == 1 for m in del_enc)
+
+
 # ---------- sonda ----------
 def test_health(client):
     r = client.get("/health")

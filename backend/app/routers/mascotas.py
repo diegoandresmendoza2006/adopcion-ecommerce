@@ -107,11 +107,14 @@ def buscar_mascotas(
 @router.get("/gestion/inventario", response_model=List[schemas.MascotaOut])
 def inventario_del_refugio(response: Response, buscar: Optional[str] = Query(None, max_length=60),
                            estado: Optional[str] = Query(None, max_length=30),
+                           refugio_id: Optional[int] = Query(None, description="Solo el administrador: filtra por refugio"),
                            pagina: Optional[int] = Query(None, ge=1), por_pagina: int = Query(20, ge=1, le=100),
                            db: Session = Depends(get_db), usuario: models.Usuario = Depends(security.require_staff)):
     query = db.query(models.Mascota)
     if usuario.rol_id == security.ROL_ENCARGADO and usuario.refugio_id:
         query = query.filter(models.Mascota.refugio_id == usuario.refugio_id)
+    elif refugio_id:
+        query = query.filter(models.Mascota.refugio_id == refugio_id)
     if buscar and buscar.strip():
         query = query.filter(models.Mascota.nombre.ilike(_like(buscar.strip()), escape="\\"))
     if estado and estado.strip():
