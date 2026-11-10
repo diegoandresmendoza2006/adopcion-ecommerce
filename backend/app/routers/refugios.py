@@ -16,7 +16,9 @@ def crear_refugio(refugio: schemas.RefugioCreate, db: Session = Depends(get_db),
     nuevo_refugio = models.Refugio(
         nombre=refugio.nombre,
         direccion=refugio.direccion,
-        telefono=refugio.telefono
+        telefono=refugio.telefono,
+        latitud=refugio.latitud,
+        longitud=refugio.longitud,
     )
     db.add(nuevo_refugio)
     db.commit()

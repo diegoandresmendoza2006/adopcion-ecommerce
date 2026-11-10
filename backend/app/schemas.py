@@ -167,12 +167,16 @@ class RefugioCreate(BaseModel):
     nombre: str
     direccion: Optional[str] = None
     telefono: Optional[str] = None
+    latitud: Optional[float] = Field(None, ge=-90, le=90)
+    longitud: Optional[float] = Field(None, ge=-180, le=180)
 
 class RefugioOut(BaseModel):
     id: int
     nombre: str
     direccion: Optional[str] = None
     telefono: Optional[str] = None
+    latitud: Optional[float] = None
+    longitud: Optional[float] = None
 
     class Config:
         from_attributes = True
@@ -527,12 +531,16 @@ class RefugioPut(BaseModel):
     nombre: str = Field(min_length=1, max_length=100)
     direccion: Optional[str] = Field(None, max_length=255)
     telefono: Optional[str] = Field(None, max_length=20)
+    latitud: Optional[float] = Field(None, ge=-90, le=90)
+    longitud: Optional[float] = Field(None, ge=-180, le=180)
 
 
 class RefugioUpdate(BaseModel):
     nombre: Optional[str] = Field(None, min_length=1, max_length=100)
     direccion: Optional[str] = Field(None, max_length=255)
     telefono: Optional[str] = Field(None, max_length=20)
+    latitud: Optional[float] = Field(None, ge=-90, le=90)
+    longitud: Optional[float] = Field(None, ge=-180, le=180)
 
 
 class ImagenSubida(BaseModel):

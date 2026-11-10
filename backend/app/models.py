@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, Numeric, TIMESTAMP, JSON, Boolean, Date, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, Numeric, TIMESTAMP, JSON, Boolean, Date, Float, UniqueConstraint
 from sqlalchemy.sql import func
 from .database import Base
 
@@ -15,6 +15,9 @@ class Refugio(Base):
     nombre = Column(String(100), nullable=False)
     direccion = Column(String(255))
     telefono = Column(String(20))
+    # Ubicación en el mapa (la elige el administrador al crear el refugio)
+    latitud = Column(Float)
+    longitud = Column(Float)
 
 class Usuario(Base):
     __tablename__ = "usuarios"
